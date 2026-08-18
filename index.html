@@ -805,7 +805,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
             <div class="select-group">
               <div class="fl-select">
                 <span class="fl-label" id="trim-fl-label">The new ID.3 Neo</span>
-                <select id="trim-select" aria-label="Which model are you interested in?" onchange="onTrimChange()">
+                <select id="trim-select" aria-label="Which model are you interested in?">
                   <optgroup label="The new ID.3 Neo">
                     <option value="Trend">Trend</option>
                     <option value="Life">Life</option>
@@ -822,7 +822,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
               </div>
               <div class="fl-select">
                 <span class="fl-label">Motor / Battery Capacity</span>
-                <select id="battery-select" aria-label="Motor and battery capacity" onchange="updateCost()">
+                <select id="battery-select" aria-label="Motor and battery capacity">
                   <option value="50">125 kW (170 PS) · 50 kWh</option>
                 </select>
                 <span class="fl-chevron"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg></span>
@@ -1429,6 +1429,17 @@ window.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('input', () => validate(el));
     el.addEventListener('blur',  () => validate(el));
   });
+})();
+
+/* WAVE flags a <select> carrying an inline onchange as a possible "JavaScript jump
+   menu" -- the pattern where changing a select navigates the user somewhere, which
+   is a genuine usability problem for keyboard users stepping through options. These
+   selects only recompute a result (SC 3.2.2 verified separately: 0 navigations, 0
+   popups, focus retained), so the alert was a false positive -- but binding via
+   addEventListener is better practice anyway and removes the inline handler. */
+(function bindSelectHandlers(){
+  document.getElementById('trim-select').addEventListener('change', function () { onTrimChange(); });
+  document.getElementById('battery-select').addEventListener('change', function () { updateCost(); });
 })();
 </script>
 </body>
