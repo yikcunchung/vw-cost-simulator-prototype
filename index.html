@@ -252,6 +252,13 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 /* SC 2.5.8: 24x24 pointer target around the 16px glyph, laid out at 16px so the
    row geometry is unchanged (same trick as .soc-thumb::before elsewhere). */
 .edit-icon-hit { position:absolute; left:50%; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); }
+/* The pencil carries alt="Edit" rather than alt="". Each .edit-icon-btn is a
+   <label for> used as a click-to-focus affordance, and with an empty alt it had no
+   text content at all — real WAVE reported 10 "Empty form label" ERRORS. The inputs
+   were never unnamed (each has its own aria-label, which takes precedence over label
+   text), so this was not a WCAG failure, but an empty <label for> is thin markup and
+   10 errors a BITV tester must dismiss by hand. SC 2.5.3 is unaffected: the visible
+   label here is an icon, not text. */
 .edit-icon { width:16px; height:16px; flex-shrink:0; display:block; opacity:.6; transition:opacity .15s; }
 .edit-icon-btn:hover .edit-icon { opacity:1; }
 
@@ -385,6 +392,13 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
   overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%);
   border:0; white-space:nowrap;
 }
+/* #cost-live sits inside the navy .result-card and inherited the body's #1b2236, so
+   it was #1b2236 on #1b2236 — 1:1. Clipped to 1x1, so nothing is visually rendered
+   and no user was affected; but real WAVE does not treat .sr-only as hidden and
+   reported a Contrast Error a BITV tester then has to dismiss by hand. White also
+   degrades safely if the clip ever breaks. Scoped: the other .sr-only nodes sit on
+   the light background where the inherited navy is correct. */
+#cost-live { color:#fff; }
 /* SC 1.4.10: padding-bottom was 80px against a 116px bar, leaving 36px of the
    disclaimer permanently covered at maximum scroll. */
 @media (max-width:959px) { .simulator, .cost-simulator { padding-bottom:170px; } }
@@ -557,7 +571,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-home-m" aria-label="Home charging price in pounds per kWh" value="0.24" step="0.01" min="0" max="9.99" oninput="syncInput('home','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-home-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-home-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <!-- Desktop: label+slider left, input right -->
@@ -580,7 +594,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-home-d" aria-label="Home charging price in pounds per kWh" value="0.24" step="0.01" min="0" max="9.99" oninput="syncInput('home','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-home-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-home-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <!-- Mobile: slider below -->
@@ -607,7 +621,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-work-m" aria-label="Work charging price in pounds per kWh" value="0.32" step="0.01" min="0" max="9.99" oninput="syncInput('work','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-work-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-work-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <div class="step-row">
@@ -629,7 +643,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-work-d" aria-label="Work charging price in pounds per kWh" value="0.32" step="0.01" min="0" max="9.99" oninput="syncInput('work','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-work-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-work-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <div class="step-mobile-row" style="margin-top:10px;">
@@ -655,7 +669,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-public-m" aria-label="Public charging charging price in pounds per kWh" value="0.52" step="0.01" min="0" max="9.99" oninput="syncInput('public','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-public-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-public-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <div class="step-row">
@@ -677,7 +691,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-public-d" aria-label="Public charging charging price in pounds per kWh" value="0.52" step="0.01" min="0" max="9.99" oninput="syncInput('public','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-public-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-public-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <div class="step-mobile-row" style="margin-top:10px;">
@@ -703,7 +717,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-motorway-m" aria-label="Motorway charging price in pounds per kWh" value="0.75" step="0.01" min="0" max="9.99" oninput="syncInput('motorway','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-motorway-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-motorway-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <div class="step-row">
@@ -725,7 +739,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-motorway-d" aria-label="Motorway charging price in pounds per kWh" value="0.75" step="0.01" min="0" max="9.99" oninput="syncInput('motorway','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-motorway-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+                <label class="edit-icon-btn" for="price-motorway-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
               </div>
             </div>
             <div class="step-mobile-row" style="margin-top:10px;">
@@ -764,14 +778,14 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
               <span class="fuel-item-label">Petrol:</span>
               <input type="number" id="price-petrol" aria-label="Petrol price in pounds per litre" value="1.55" step="0.01" min="0" max="9.99" oninput="updateCost()">
             </div>
-            <label class="edit-icon-btn" for="price-petrol"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+            <label class="edit-icon-btn" for="price-petrol"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
           </div>
           <div class="fuel-item">
             <div class="fl-input">
               <span class="fuel-item-label">Diesel:</span>
               <input type="number" id="price-diesel" aria-label="Diesel price in pounds per litre" value="1.60" step="0.01" min="0" max="9.99" oninput="updateCost()">
             </div>
-            <label class="edit-icon-btn" for="price-diesel"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+            <label class="edit-icon-btn" for="price-diesel"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
           </div>
         </div>
       </div>
