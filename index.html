@@ -9,11 +9,11 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-light.woff2') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
-@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
-@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
-@font-face { font-family:'VW Text'; src:url('../range-simulator/site-01/assets/fonts/vwtext-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
-@font-face { font-family:'VW Text'; src:url('../range-simulator/site-01/assets/fonts/vwtext-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('assets/fonts/vwhead-light.woff2') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('assets/fonts/vwhead-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('assets/fonts/vwhead-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Text'; src:url('assets/fonts/vwtext-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Text'; src:url('assets/fonts/vwtext-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
 
 :root {
   --bg: rgba(246,245,242,1);
@@ -816,7 +816,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
             </div>
           </div>
           <div class="vehicle-asset">
-            <img src="../range-simulator/site-01/assets/media/id3/id3-trend.webp" alt="Volkswagen" id="car-img">
+            <img src="assets/media/id3/id3-trend.webp" alt="Volkswagen" id="car-img">
           </div>
           <p class="model-disclaimer" id="model-disclaimer">Electricity combined fuel consumption 22.7–22.5 kWh / 100 mi · CO₂ emissions combined 0 g / km</p>
         </div>
@@ -921,13 +921,13 @@ const batteryOptions = {
   PoloGTI:   [{ v:'52b', l:'166 kW (226 PS) · 52 kWh' }],
 };
 const carImages = {
-  Trend:'../range-simulator/site-01/assets/media/id3/id3-trend.webp',
-  Life:'../range-simulator/site-01/assets/media/id3/id3-life.webp',
-  Style:'../range-simulator/site-01/assets/media/id3/id3-style.webp',
-  PoloTrend:'../range-simulator/site-01/assets/media/idpolo/idpolo-trend.webp',
-  PoloLife:'../range-simulator/site-01/assets/media/idpolo/idpolo-life.webp',
-  PoloStyle:'../range-simulator/site-01/assets/media/idpolo/idpolo-style.webp',
-  PoloGTI:'../range-simulator/site-01/assets/media/idpolo/idpolo-gti.webp',
+  Trend:'assets/media/id3/id3-trend.webp',
+  Life:'assets/media/id3/id3-life.webp',
+  Style:'assets/media/id3/id3-style.webp',
+  PoloTrend:'assets/media/idpolo/idpolo-trend.webp',
+  PoloLife:'assets/media/idpolo/idpolo-life.webp',
+  PoloStyle:'assets/media/idpolo/idpolo-style.webp',
+  PoloGTI:'assets/media/idpolo/idpolo-gti.webp',
 };
 const trimGroupLabels = {
   Trend:'The new ID.3 Neo', Life:'The new ID.3 Neo', Style:'The new ID.3 Neo',
