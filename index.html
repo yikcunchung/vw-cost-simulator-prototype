@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Compare the running costs of a Volkswagen ID. model against petrol and diesel, based on your mileage and charging habits.">
+<link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+<title>Volkswagen Cost Simulator</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-light.woff2') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Head'; src:url('../range-simulator/site-01/assets/fonts/vwhead-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Text'; src:url('../range-simulator/site-01/assets/fonts/vwtext-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family:'VW Text'; src:url('../range-simulator/site-01/assets/fonts/vwtext-bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+
+:root {
+  --bg: rgba(246,245,242,1);
+  --navy: rgba(27,34,54,1);
+  --navy-dark: rgba(41,48,67,1);
+  --label-blue: rgba(0,30,80,1);
+  --border-light: rgba(208,209,213,1);
+  --border-input: rgba(110,116,126,1);
+  --muted: rgba(96,101,116,1);
+  --tooltip-bg: rgba(49,56,74,1);
+  --font-text: 'VW Text','Inter',-apple-system,sans-serif;
+  --font-head: 'VW Head','Inter',-apple-system,sans-serif;
+}
+
+body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -webkit-font-smoothing:antialiased; font-size:16px; }
+
+/* ── Topbar ── */
+#topbar { background:white; border-bottom:1px solid var(--border-light); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 0; height:64px; width:100%; flex-shrink:0; position:sticky; top:0; z-index:10; -webkit-font-smoothing:antialiased; color:#293043; }
+.topbar-container { display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 4.16vw; box-sizing:border-box; }
+.topbar-left { display:flex; align-items:center; gap:20px; flex-shrink:0; }
+.topbar-logo-col { display:flex; align-items:center; gap:20px; min-height:40px; flex-shrink:0; }
+.topbar-logo-col svg { display:block; width:32px; height:32px; }
+.topbar-tabs-col { display:flex; align-items:center; min-height:40px; }
+.topbar-tabs { display:flex; gap:20px; align-items:center; flex-shrink:0; }
+.topbar-tab { display:flex; align-items:center; justify-content:center; padding:8px 0; flex-shrink:0; font-family:'VW Text','Inter',-apple-system,sans-serif; font-weight:700; font-size:16px; line-height:1.2; color:#293043; white-space:nowrap; cursor:pointer; }
+@media (max-width:959px) { .topbar-tab { display:none; } }
+@media (max-width:767px) { #topbar { height:56px; padding:6px 0; } }
+.topbar-actions-col { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; min-height:40px; flex-shrink:0; }
+.topbar-actions { display:flex; gap:16px; align-items:center; flex-shrink:0; }
+@media (max-width:959px) { .topbar-actions { gap:12px; } }
+.topbar-dealer { display:flex; align-items:center; max-width:150px; flex-shrink:0; }
+.topbar-dealer-text { font-family:'VW Text','Inter',-apple-system,sans-serif; font-weight:400; font-style:normal; font-size:14px; line-height:1.2; color:#293043; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1 0 0; min-width:1px; }
+@media (max-width:959px) { .topbar-dealer-text { display:none; } }
+.topbar-cta { width:32px; height:32px; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.topbar-cta svg { width:24px; height:24px; display:block; flex-shrink:0; }
+
+/* ── Page ── */
+#content { background:var(--bg); }
+.simulator { padding-inline:8.33vw; padding-bottom:80px; }
+
+/* ── Header ── */
+.sim-header { padding-top:40px; padding-bottom:40px; display:flex; align-items:flex-start; gap:20px; }
+.sim-header-icon { width:48px; height:48px; flex-shrink:0; }
+.sim-headline { font-family:var(--font-head); font-size:34px; font-weight:300; line-height:1.2; color:var(--navy); }
+@media (max-width:1279px) { .sim-header { padding-top:32px; padding-bottom:32px; } }
+@media (max-width:767px) { .sim-headline { font-size:28px; } .sim-header { padding-top:28px; padding-bottom:28px; } }
+@media (max-width:439px) { .sim-header { gap:12px; padding-top:24px; padding-bottom:24px; } .sim-header-icon { width:36px; height:36px; } }
+
+/* ── Grid ── */
+.section-container { display:flex; flex-direction:column; gap:24px; }
+@media (min-width:960px) {
+  .section-container { display:grid; grid-template:"inputs right" / 4.2fr 2.45fr; column-gap:4.16vw; align-items:start; }
+  .input-section { grid-area:inputs; }
+  .right-col { grid-area:right; position:sticky; top:76px; align-self:start; z-index:1; }
+}
+
+/* ── Input card ── */
+.input-section {
+  border-radius:20px;
+  background:linear-gradient(167deg, rgba(255,255,255,.80) 0%, rgba(255,255,255,.20) 60%, rgba(255,255,255,0) 100%);
+  box-shadow:0 12px 24px 0 rgba(49,25,2,.08);
+  padding:40px;
+  display:flex; flex-direction:column; gap:40px;
+}
+@media (max-width:959px) { .input-section { border-radius:0; background:none; box-shadow:none; padding:0; gap:32px; } .section-container { gap:32px; } .right-col { display:contents; } }
+@media (max-width:559px) { .input-section { gap:28px; } .section-container { gap:28px; } }
+
+/* ── Combo ── */
+.combo { display:flex; flex-direction:column; gap:12px; }
+.question { display:flex; align-items:center; gap:0; }
+.question-label { font-family:var(--font-text); font-size:16px; font-weight:700; line-height:1.2; color:var(--navy); }
+.q-icon-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; color:rgb(41,48,67); background:transparent; border:none; padding:0; cursor:pointer; flex-shrink:0; margin-left:4px; vertical-align:middle; -webkit-tap-highlight-color:transparent; }
+.q-icon { width:24px; height:24px; display:block; pointer-events:none; }
+
+/* ── Distribution control (matches range-simulator pattern) ── */
+.dist-wrap { display:flex; flex-direction:column; margin-top:4px; }
+.dist-block { border:1px solid rgba(110,116,126,1); border-radius:12px; overflow:visible; position:relative; width:100%; height:80px; }
+.dist-icon { position:absolute; top:50%; display:flex; align-items:center; justify-content:center; transform:translate(-50%,-50%); overflow:hidden; pointer-events:none; }
+.dist-icon img { width:100%; height:100%; display:block; }
+.dist-divider { position:absolute; top:0; bottom:0; width:2px; border-left:2px dashed rgba(110,116,126,1); transform:translateX(-1px); pointer-events:none; z-index:1; }
+.dist-thumb { position:absolute; display:flex; box-sizing:border-box; align-items:center; justify-content:center; width:28px; height:28px; border-radius:100%; border:2px solid rgb(41,48,67); background-color:rgb(41,48,67); color:rgb(255,255,255); z-index:1; cursor:grab; user-select:none; touch-action:none; pointer-events:auto; padding:0; outline:none; }
+.dist-thumb:hover { background-color:#997F67; border-color:#997F67; }
+.dist-thumb svg { display:block; pointer-events:none; }
+.dist-labels { display:flex; margin-top:20px; }
+.dist-label { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.dist-seg-pct { font-family:var(--font-text); font-size:16px; font-weight:700; color:var(--navy); }
+.dist-seg-lbl { font-family:var(--font-text); font-size:16px; font-weight:400; color:var(--navy); text-align:center; }
+@media (max-width:439px) { .dist-seg-lbl { font-size:12px; } }
+
+/* ── Miles slider ── */
+.slider-wrap { position:relative; padding-top:44px; }
+.slider-track-area { position:relative; height:2px; background:rgba(208,209,213,1); border-radius:8px; margin:0 18px 10px; }
+.slider-active-track { position:absolute; top:0; bottom:0; left:0; background:rgba(153,127,103,1); border-radius:4px; }
+input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); left:-18px; right:-18px; width:calc(100% + 36px); height:44px; opacity:0; cursor:pointer; z-index:2; margin:0; }
+.slider-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:18px; height:18px; background:var(--navy-dark); border-radius:50%; pointer-events:none; z-index:1; box-shadow:0 1px 4px rgba(0,0,0,.25); }
+.slider-tooltip { display:inline-flex; align-items:center; position:absolute; bottom:calc(100% + 8px); background:var(--tooltip-bg); color:#fff; font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2; padding:8px 12px; border-radius:4px; white-space:nowrap; left:50%; transform:translateX(-50%); pointer-events:none; }
+.slider-tooltip.align-left { left:-9px; transform:none; }
+.slider-tooltip.align-right { left:auto; right:-9px; transform:none; }
+.slider-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--tooltip-bg); }
+.slider-tooltip.align-left::after { left:14px; transform:none; }
+.slider-tooltip.align-right::after { left:auto; right:14px; transform:none; }
+.slider-labels { display:flex; justify-content:space-between; font-family:var(--font-text); font-size:14px; color:var(--navy); line-height:1.2; }
+
+/* ── Divider ── */
+.combo-divider { height:1px; background:var(--border-input); }
+
+/* ── Step slider ── */
+.step-row {
+  display:flex;
+  align-items:flex-start;
+  gap:20px;
+}
+.step-label-col {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.step-freq-label {
+  display:flex;
+  gap:4px;
+  align-items:baseline;
+  flex-wrap:wrap;
+  font-family:var(--font-text);
+  font-size:16px;
+  line-height:1.2;
+  color:var(--navy);
+}
+.step-freq-label .label-bold { font-weight:700; }
+.step-freq-label .label-freq { font-weight:400; }
+
+.step-track-wrap {
+  position:relative;
+  height:18px;
+  display:flex;
+  align-items:center;
+}
+.step-line-base {
+  position:absolute;
+  left:0; right:0;
+  height:2px;
+  background:rgba(208,209,213,1);
+  border-radius:2px;
+}
+.step-line-active {
+  position:absolute;
+  left:0;
+  height:2px;
+  background:rgba(153,127,103,1);
+  border-radius:2px;
+}
+.step-dot {
+  position:absolute;
+  width:6px; height:6px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  top:50%;
+}
+.step-dot.active  { background:rgba(153,127,103,1); }
+.step-dot.inactive { background:rgba(208,209,213,1); }
+.step-thumb-el {
+  position:absolute;
+  width:18px; height:18px;
+  border-radius:50%;
+  background:var(--navy-dark);
+  cursor:ew-resize;
+  z-index:3;
+  transform:translate(-50%,-50%);
+  top:50%;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+  touch-action:none;
+  border:none; padding:0; outline:none;
+}
+
+.step-input-col {
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding-top:2px;
+}
+
+/* Mobile: step row stacks */
+@media (max-width:959px) {
+  .step-row { display:none !important; }
+  .step-mobile-row { display:flex !important; }
+}
+@media (min-width:960px) {
+  .step-mobile-row { display:none !important; }
+}
+
+/* Mobile row: label + input side by side */
+.step-mobile-row {
+  display:none;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.step-mobile-right {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:6px;
+  padding-top:2px;
+}
+
+/* ── Floating label text input ── */
+.fl-input { position:relative; }
+.fl-input input {
+  width:96px;
+  height:50px;
+  padding:20px 12px 0 16px;
+  font-family:var(--font-text); font-size:16px; font-weight:400;
+  color:rgba(0,14,38,1);
+  background:transparent;
+  border:1px solid var(--border-input);
+  border-radius:8px;
+  outline:none;
+  box-sizing:border-box;
+  -moz-appearance:textfield;
+  transition:border-color .15s;
+}
+.fl-input input::-webkit-inner-spin-button,
+.fl-input input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+.fl-input input:focus { border-color:rgba(153,127,103,1); }
+.fl-input .fl-label {
+  position:absolute; top:6px; left:16px;
+  font-family:var(--font-text); font-size:12px; line-height:1.5;
+  font-weight:400; color:var(--label-blue);
+  pointer-events:none; max-width:100%; white-space:normal; overflow-wrap:break-word; text-overflow:clip;}
+/* The pen is the edit affordance for the price field beside it. A <label for>
+   forwards the click to that input natively — the same result as clicking the
+   field — with no JS, and without adding a tab stop that would only move focus
+   to the very next element. The input keeps its own aria-label, which takes
+   precedence over this (imageless) label for the accessible name. */
+.edit-icon-btn { position:relative; display:flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+/* SC 2.5.8: 24x24 pointer target around the 16px glyph, laid out at 16px so the
+   row geometry is unchanged (same trick as .soc-thumb::before elsewhere). */
+.edit-icon-hit { position:absolute; left:50%; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); }
+.edit-icon { width:16px; height:16px; flex-shrink:0; display:block; opacity:.6; transition:opacity .15s; }
+.edit-icon-btn:hover .edit-icon { opacity:1; }
+
+/* ── Charging locations wrapper ── */
+.charge-locs { display:flex; flex-direction:column; gap:20px; }
+
+/* ── Reset link ── */
+.reset-link { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+.reset-link img { width:20px; height:20px; flex-shrink:0; }
+.reset-link-text { display:flex; flex-direction:column; gap:1px; }
+.reset-label { font-family:var(--font-text); font-size:14px; color:var(--navy-dark); line-height:1.2; }
+.reset-stroke { height:1px; background:var(--navy-dark); }
+
+/* ── Fuel row ── */
+.fuel-row { display:flex; align-items:center; gap:20px; }
+.fuel-item { display:flex; align-items:center; gap:8px; }
+.fuel-item-label { position:absolute; top:6px; left:16px; font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:rgba(0,30,80,1); pointer-events:none; white-space:nowrap; }
+@media (max-width:439px) { .fuel-row { flex-direction:column; align-items:flex-start; gap:12px; } }
+
+/* ── Floating label select ── */
+.fl-select { position:relative; }
+/* padding-right 48px, not 40px: .fl-chevron is right:8px and 32px wide, so it
+   occupies 8-40px from the edge. 40px left the value touching the chevron with
+   no clearance and truncated one character later than the other simulators. */
+.fl-select select { width:100%; height:50px; padding:20px 48px 0 16px; font-family:var(--font-text); font-size:16px; font-weight:400; color:rgba(0,14,38,1); background:transparent; border:1px solid var(--border-input); border-radius:8px; appearance:none; cursor:pointer; outline:none; box-sizing:border-box; transition:border-color .15s; text-overflow:ellipsis; }
+.fl-select:hover select { border-color:rgba(153,127,103,1); }
+.fl-select .fl-label { position:absolute; top:6px; left:16px; font-family:var(--font-text); font-size:12px; line-height:1.5; font-weight:400; color:var(--label-blue); pointer-events:none;  overflow:hidden; max-width:100%; white-space:normal; overflow-wrap:break-word; text-overflow:clip;}
+.fl-chevron { position:absolute; right:8px; top:50%; transform:translateY(-50%); pointer-events:none; width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
+.select-group { display:flex; gap:12px; }
+.select-group .fl-select { flex:1; min-width:0; }
+
+/* ── Model section ── */
+.model-section { display:flex; flex-direction:column; gap:4px; }
+.vehicle-asset { width:100%; aspect-ratio:2/1; overflow:hidden; }
+.vehicle-asset img { width:100%; height:100%; object-fit:cover; display:block; }
+.model-disclaimer { font-family:var(--font-text); font-size:14px; color:var(--navy); line-height:1.5; }
+
+/* ── Result card ── */
+.result-card {
+  background:var(--navy);
+  border-radius:12px;
+  padding:24px;
+  display:flex; flex-direction:column; gap:16px;
+}
+@media (max-width:767px) { .result-card { padding:20px; } }
+.result-headline { display:flex; align-items:flex-start; gap:8px; }
+.result-headline-text { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.3; flex:1; }
+.result-headline-info { width:20px; height:20px; flex-shrink:0; margin-top:1px; }
+.result-ev-block { display:flex; flex-direction:column; gap:2px; }
+.result-ev-label { font-family:var(--font-text); font-size:12px; font-weight:400; color:rgba(255,255,255,.7); line-height:1.5; }
+.result-ev-value { font-family:var(--font-head); font-size:56px; font-weight:700; color:#fff; line-height:1; display:flex; align-items:baseline; gap:0; }
+@media (max-width:767px) { .result-ev-value { font-size:44px; } }
+@media (max-width:439px) { .result-ev-value { font-size:38px; } }
+@media (max-width:374px) { .result-ev-value { font-size:34px; } }
+.slot-digit { display:inline-block; overflow:hidden; height:1em; vertical-align:top; }
+.slot-reel { display:flex; flex-direction:column; transition:transform 1.2s cubic-bezier(0.22,1,0.36,1); }
+.slot-reel span { display:block; height:1em; line-height:1; text-align:center; }
+.result-row { display:flex; align-items:flex-start; gap:12px; }
+.result-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.result-col-label { font-family:var(--font-text); font-size:12px; color:rgba(255,255,255,.7); line-height:1.5; }
+.result-col-val-lg { font-family:var(--font-head); font-size:28px; font-weight:700; color:#fff; line-height:1.2; }
+@media (max-width:439px) { .result-col-val-lg { font-size:22px; } }
+.result-col-val-sm { font-family:var(--font-head); font-size:18px; font-weight:700; color:#fff; line-height:1.2; }
+.result-divider { height:1px; background:rgba(255,255,255,.2); }
+
+/* ── CTA (outside result card, standard navy outline) ── */
+.cta-button {
+  width:100%;
+  height:44px;
+  border:1px solid var(--navy-dark);
+  border-radius:100px;
+  background:transparent;
+  color:var(--navy-dark);
+  font-family:var(--font-text); font-size:16px; font-weight:400;
+  padding:8px 32px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:4px;
+  transition:background 0.15s, color 0.15s;
+}
+.cta-button:hover { background:var(--button-secondary-hover, #CCBDAB); border-color:transparent; color:var(--navy); }
+
+/* ── Output panel ── */
+.output-panel { display:flex; flex-direction:column; gap:24px; }
+
+/* ── Sticky bar (mobile) ── */
+.sticky-result { display:none; }
+@media (max-width:959px) {
+  .sticky-result {
+    display:block; position:fixed; bottom:0; left:0; right:0;
+    background:var(--navy); padding:24px 8.33vw;
+    z-index:100;
+    transform:translateY(100%);
+    transition:transform .3s cubic-bezier(.22,1,.36,1);
+    pointer-events:none;
+  }
+  .sticky-result.visible { transform:translateY(0); pointer-events:auto; }
+  .sticky-ev-value { font-family:var(--font-head); font-size:32px; font-weight:700; color:#fff; line-height:1; display:flex; align-items:baseline; gap:0; }
+  .sticky-label { font-family:var(--font-text); font-size:12px; color:rgba(255,255,255,.7); line-height:1.5; }
+}
+
+/* ── Disclaimer ── */
+.disclaimer { display:flex; gap:16px; margin-top:40px; }
+.disclaimer-num { font-family:var(--font-text); font-size:14px; color:var(--muted); line-height:24px; flex-shrink:0; }
+.disclaimer-copy { font-family:var(--font-text); font-size:14px; color:var(--muted); line-height:1.5; }
+
+/* ---- a11y additions (WCAG 2.2 AA) ---- */
+/* SC 2.4.7: nine tab stops painted zero indicator pixels. .dist-thumb,
+   .step-thumb-el and .fl-select select all set outline:none with no replacement,
+   and #miles-slider is opacity:0 so its UA ring is invisible with it. */
+.dist-thumb:focus-visible, .step-thumb-el:focus-visible {
+  outline:2px solid #1B2236; outline-offset:3px;
+}
+.fl-select select:focus-visible { outline:2px solid #1B2236; outline-offset:2px; }
+input[type="range"]:focus-visible ~ .slider-thumb {
+  outline:2px solid #1B2236; outline-offset:3px; border-radius:50%;
+}
+/* SC 2.5.8: .step-thumb-el is 18x18 = 324px^2 against 576 required, and its
+   alternative target (.step-track-wrap) is only 18px tall, so neither the
+   equivalent nor the spacing exception rescued it. Transparent 24x24 hit area. */
+.step-thumb-el { position:relative; }
+.step-thumb-el::before {
+  content:''; position:absolute; left:50%; top:50%;
+  width:24px; height:24px; transform:translate(-50%,-50%);
+}
+/* SC 2.5.7: the distribution block is now a single-pointer target. */
+#dist-block { cursor:pointer; }
+/* SC 2.4.11: the 116px fixed bar covered 18 of 20 tab stops at 320x256. */
+html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
+.sr-only {
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%);
+  border:0; white-space:nowrap;
+}
+/* SC 1.4.10: padding-bottom was 80px against a 116px bar, leaving 36px of the
+   disclaimer permanently covered at maximum scroll. */
+@media (max-width:959px) { .simulator, .cost-simulator { padding-bottom:170px; } }
+/* SC 1.4.12: the select's floating label is the only description of the control
+   and truncated (166px into 156px) once the required text spacing was applied. */
+.fl-select .fl-label {; max-width:100%; white-space:normal; overflow-wrap:break-word; text-overflow:clip;}
+
+/* SC 2.4.1: skip link, visually hidden until focused */
+.skip-link {
+  position:absolute; left:8px; top:-40px; z-index:9999;
+  background:#1B2236; color:#fff; padding:8px 16px; border-radius:0 0 8px 8px;
+  font-family:var(--font-text,sans-serif); font-size:14px; text-decoration:none;
+  transition:top 0.15s;
+}
+.skip-link:focus { top:0; }
+
+/* SC 2.1.1 / 4.1.2: .reset-link was a <div onclick> — tabIndex -1, no role, no
+   name, invisible to the AX tree as a widget, and Enter/Space did nothing. It is a
+   <button> now. Strip UA chrome so the visual is unchanged; the inner elements are
+   <span>s because <div> is not valid inside <button>. */
+button.reset-link {
+  background:none; border:0; padding:0; font:inherit; color:inherit;
+  cursor:pointer; text-align:inherit;
+}
+button.reset-link .reset-link-text { display:flex; flex-direction:column; gap:1px; }
+button.reset-link .reset-stroke { display:block; height:1px; background:var(--navy-dark); }
+button.reset-link:focus-visible { outline:2px solid #1B2236; outline-offset:2px; }
+/* SC 3.3.1 / 3.3.3: an out-of-range price is reported in text, not silently computed. */
+.field-error {
+  display:block; margin-top:4px; font-family:var(--font-text,sans-serif);
+  font-size:12px; line-height:1.4; color:#8A1B1B;
+}
+input[aria-invalid="true"] { border-color:#8A1B1B !important; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#sim-main">Skip to main content</a>
+
+<!-- TOPBAR -->
+<div id="topbar" role="banner">
+  <div class="topbar-container">
+    <div class="topbar-left">
+      <div class="topbar-logo-col">
+        <div style="width:32px;height:32px;flex-shrink:0;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.9998 0.666626C24.4877 0.666626 31.3336 7.51169 31.3337 15.9996C31.3337 24.4877 24.4879 31.3336 15.9998 31.3336C7.51181 31.3334 0.666748 24.4876 0.666748 15.9996C0.666923 7.5118 7.51192 0.6668 15.9998 0.666626ZM20.8738 26.8971C20.7643 27.1161 20.6544 27.2809 20.3806 27.2809C20.1071 27.2807 19.9979 27.116 19.8884 26.8971L16.1648 18.7379C16.11 18.6832 16.1093 18.5739 15.9998 18.5739C15.9451 18.5741 15.8903 18.6287 15.8357 18.7379L12.1667 26.8971C12.0572 27.1161 11.9474 27.2809 11.6736 27.2809C11.4 27.2808 11.2909 27.1161 11.1814 26.8971L3.29565 11.5641C2.80283 12.9878 2.52909 14.4664 2.52905 15.9996C2.52905 23.3924 8.60705 29.5258 15.9998 29.526C23.3926 29.526 29.4714 23.3925 29.5261 15.9996C29.5261 14.4117 29.2523 12.933 28.7595 11.5641L20.8738 26.8971ZM17.6433 14.6862C17.5338 14.905 17.4237 14.9596 17.2595 14.9596H14.741C14.5768 14.9596 14.4666 14.9049 14.3572 14.6862L9.48315 4.17151C7.45707 5.3215 5.70447 6.96481 4.49976 8.93616L11.4001 22.1881C11.4548 22.2429 11.4549 22.3521 11.5642 22.3522C11.6736 22.3522 11.6737 22.2429 11.7283 22.1881L14.3572 16.3834C14.4667 16.1644 14.5767 16.109 14.741 16.109H17.2595C17.4238 16.109 17.5338 16.1644 17.6433 16.3834L20.2712 22.1881C20.326 22.2429 20.3268 22.3522 20.4363 22.3522C20.4909 22.3519 20.5457 22.2973 20.6003 22.1881L27.4451 8.93616C26.2403 6.96473 24.4879 5.32151 22.4617 4.17151L17.6433 14.6862ZM15.9998 2.47424C14.4665 2.47428 12.9878 2.74802 11.6189 3.24084L15.8357 12.3307C15.8904 12.3854 15.8906 12.4945 15.9998 12.4948C16.1093 12.4948 16.11 12.3855 16.1648 12.3307L20.3806 3.24084C19.0116 2.74804 17.533 2.47424 15.9998 2.47424Z" fill="#293043"/>
+          </svg>
+        </div>
+      </div>
+      <div class="topbar-tabs-col">
+        <div class="topbar-tabs">
+          <div class="topbar-tab">Menu</div>
+          <div class="topbar-tab">Models</div>
+          <div class="topbar-tab">Configure</div>
+          <div class="topbar-tab">Stock cars</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-actions-col">
+      <div class="topbar-actions">
+        <div class="topbar-dealer">
+          <p class="topbar-dealer-text">Select dealer</p>
+          <div class="topbar-cta" style="width:32px;height:32px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.0002 0.961914C14.3662 0.96195 16.63 1.67121 18.3206 3.09082C20.0308 4.52704 21.093 6.64221 21.093 9.29102C21.093 10.7275 20.5566 12.2315 19.8274 13.623C19.0905 15.0293 18.1107 16.4049 17.1213 17.6064C16.1305 18.8098 15.1114 19.8615 14.2786 20.6191C13.864 20.9963 13.4826 21.3131 13.1643 21.542C13.0068 21.6552 12.8464 21.7607 12.6936 21.8418C12.5896 21.897 12.3202 22.0371 12.0002 22.0371C11.6766 22.0371 11.4053 21.8935 11.302 21.8379C11.149 21.7556 10.9887 21.6488 10.8313 21.5342C10.5132 21.3026 10.1314 20.9826 9.71704 20.6016C8.88492 19.8363 7.86617 18.7761 6.87622 17.5674C5.88774 16.3604 4.90939 14.9821 4.1731 13.582C3.44539 12.1982 2.9075 10.7053 2.90747 9.29102C2.90747 6.64221 3.96972 4.52704 5.67993 3.09082C7.37049 1.67129 9.63428 0.961914 12.0002 0.961914ZM12.0002 2.96191C10.0166 2.96191 8.23432 3.558 6.96606 4.62305C5.71742 5.67165 4.90747 7.22117 4.90747 9.29102C4.90751 10.2359 5.28052 11.3905 5.9436 12.6514C6.59819 13.896 7.49062 15.16 8.42407 16.2998C9.35607 17.4378 10.3105 18.43 11.0715 19.1299C11.4504 19.4783 11.7687 19.7429 12.0032 19.9141C12.2373 19.7452 12.5546 19.4838 12.9329 19.1396C13.6932 18.4479 14.6464 17.4666 15.5774 16.3359C16.51 15.2033 17.4019 13.9432 18.0559 12.6953C18.7175 11.4328 19.093 10.2639 19.093 9.29102C19.093 7.22127 18.283 5.67165 17.0344 4.62305C15.7662 3.55801 13.9838 2.96195 12.0002 2.96191ZM12.0002 5.98145C13.6627 5.98147 15.0236 7.32096 15.0237 8.98926C15.0237 10.6576 13.6627 11.997 12.0002 11.9971C10.3377 11.9971 8.97681 10.6576 8.97681 8.98926C8.97684 7.32095 10.3378 5.98145 12.0002 5.98145ZM12.0002 7.98145C11.4281 7.98145 10.9768 8.43972 10.9768 8.98926C10.9768 9.53882 11.428 9.99707 12.0002 9.99707C12.5724 9.99705 13.0237 9.53881 13.0237 8.98926C13.0236 8.43973 12.5724 7.98147 12.0002 7.98145Z" fill="#293043"/>
+            </svg>
+          </div>
+        </div>
+        <div class="topbar-cta" style="width:32px;height:32px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.7715 21.6013L17.18 15.6221C18.4045 14.0058 19.0513 12.0254 19.017 9.99796C19.0555 8.80563 18.8491 7.61807 18.4105 6.50869C17.9719 5.39931 17.3103 4.3917 16.4668 3.54815C15.6232 2.70461 14.6156 2.04307 13.5062 1.60443C12.3969 1.16579 11.2093 0.959379 10.017 0.997955C8.82374 0.955887 7.63463 1.15991 6.52367 1.59731C5.4127 2.03472 4.40368 2.69614 3.55942 3.5404C2.71515 4.38467 2.05373 5.39369 1.61632 6.50465C1.17892 7.61562 0.9749 8.80473 1.01697 9.99796C0.973574 11.1915 1.17668 12.3812 1.61362 13.4928C2.05056 14.6044 2.71194 15.6139 3.55647 16.4585C4.40101 17.303 5.41057 17.9644 6.52214 18.4013C7.6337 18.8382 8.8234 19.0414 10.017 18.998C12.1035 19.0237 14.1365 18.338 15.7811 17.0537L21.3102 22.9665L22.7715 21.6013ZM10.0173 16.998C9.08657 17.0411 8.15711 16.8895 7.28832 16.553C6.41952 16.2164 5.6305 15.7023 4.97169 15.0435C4.31288 14.3847 3.79878 13.5957 3.46225 12.7269C3.12572 11.8581 2.97416 10.9287 3.01727 9.99796C2.97416 9.06726 3.12572 8.1378 3.46225 7.269C3.79878 6.40021 4.31288 5.61119 4.97169 4.95238C5.6305 4.29357 6.41952 3.77947 7.28832 3.44293C8.15711 3.1064 9.08657 2.95485 10.0173 2.99796C10.948 2.95485 11.8774 3.1064 12.7462 3.44293C13.615 3.77947 14.404 4.29357 15.0628 4.95238C15.7217 5.61119 16.2358 6.40021 16.5723 7.269C16.9088 8.1378 17.0604 9.06726 17.0173 9.99796C17.0604 10.9287 16.9088 11.8581 16.5723 12.7269C16.2358 13.5957 15.7217 14.3848 15.0629 15.0436C14.4041 15.7024 13.615 16.2165 12.7462 16.553C11.8774 16.8895 10.948 17.0411 10.0173 16.998V16.998Z" fill="#293043"/>
+          </svg>
+        </div>
+        <div class="topbar-cta" style="width:32px;height:32px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.9996 0.999756C18.3736 0.999756 22.9996 5.62576 22.9996 11.9998C22.9996 18.3738 18.3736 22.9998 11.9996 22.9998C5.62563 22.9998 0.999634 18.3738 0.999634 11.9998C0.999634 5.62576 5.62563 0.999756 11.9996 0.999756ZM11.9996 2.99976C6.70163 2.99976 2.99963 6.70076 2.99963 11.9998C2.99963 13.8766 3.4714 15.5475 4.30725 16.9294C5.04526 15.7615 6.5176 15.1295 8.29358 14.3835L8.93616 14.1121L9.71936 15.9519L9.06897 16.2273C7.05497 17.0723 5.99674 17.5542 5.82874 18.3992C5.80678 18.505 5.78818 18.6107 5.76721 18.7156C7.33721 20.1576 9.48563 20.9998 11.9996 20.9998C14.5136 20.9998 16.6621 20.1585 18.2321 18.7175C18.2111 18.6107 18.1925 18.506 18.1705 18.3992C18.0025 17.5552 16.9443 17.0733 14.9313 16.2273L14.2789 15.9519L15.0612 14.1121L15.7057 14.3835C17.4826 15.1295 18.954 15.7615 19.693 16.9304C20.5278 15.5475 20.9996 13.8766 20.9996 11.9998C20.9996 6.70076 17.2986 2.99976 11.9996 2.99976ZM11.9996 4.99976C14.5646 4.99976 16.4995 6.93486 16.4996 9.49976C16.4996 12.0648 14.5646 13.9998 11.9996 13.9998C9.43483 13.9996 7.49963 12.0646 7.49963 9.49976C7.49973 6.93499 9.4349 4.99996 11.9996 4.99976ZM11.9996 6.99976C10.5279 6.99994 9.49973 8.028 9.49963 9.49976C9.49963 10.9716 10.5278 11.9996 11.9996 11.9998C13.4716 11.9998 14.4996 10.9718 14.4996 9.49976C14.4995 8.02786 13.4716 6.99976 11.9996 6.99976Z" fill="#293043"/>
+          </svg>
+        </div>
+        <div class="topbar-cta" style="width:32px;height:32px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.7998 21C10.6282 21 11.2998 21.6716 11.2998 22.5C11.2998 23.3284 10.6282 24 9.7998 24C8.97149 23.9999 8.2998 23.3283 8.2998 22.5C8.2998 21.6717 8.97149 21.0001 9.7998 21ZM18.7998 21C19.6282 21 20.2998 21.6716 20.2998 22.5C20.2998 23.3284 19.6282 24 18.7998 24C17.9715 23.9999 17.2998 23.3283 17.2998 22.5C17.2998 21.6717 17.9715 21.0001 18.7998 21ZM4.7002 4H22.2998C22.6997 4 22.9999 4.39987 23 4.7998V4.90039L21.2002 14.4004C21.1001 14.7003 20.7999 15 20.5 15H7.09961L7.7998 18H20V20H6.2002L2.40039 3H0V1H4L4.7002 4ZM6.7002 13H19.4004L20.7002 6H5.09961L6.7002 13ZM10 11H8V8H10V11ZM14 11H12V8H14V11ZM18 11H16V8H18V11Z" fill="#293043"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="content">
+<div role="main" id="sim-main" class="simulator">
+
+  <div class="sim-header">
+    <img class="sim-header-icon" src="assets/icons/icon-battery-cost.svg" alt="">
+    <h1 class="sim-headline">Simulate your individual consumption costs</h1>
+  </div>
+
+  <div class="section-container">
+
+    <!-- LEFT INPUTS -->
+    <div class="input-section">
+
+      <!-- Q1: Driving distribution -->
+      <div class="combo">
+        <div class="question">
+          <span class="question-label">Where do you travel and how often?</span>
+          <button class="q-icon-btn" aria-label="More information: Where do you travel and how often"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+        </div>
+        <div class="dist-wrap">
+          <div class="dist-block" id="dist-block">
+            <div class="dist-divider" id="dist-divider-1" style="left:33.33%;"></div>
+            <div class="dist-divider" id="dist-divider-2" style="left:66.66%;"></div>
+            <button class="dist-thumb" id="dist-thumb-1" role="slider" aria-label="City driving share"
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="33" style="left:33.33%; top:0; transform:translate(-50%,-50%);">
+              <svg width="12" height="12" viewBox="6 6 12 12" fill="none"><path d="M15.72 9.09L14.73 10L15.93 11.35H8.12L9.32 10L8.32 9.11C6.06 11.61 6.06 11.71 6.06 12C6.06 12.29 6.06 12.4 8.33 14.91L9.33 14.02L8.12 12.67H15.93L14.73 14L15.73 14.89C17.99 12.4 17.99 12.3 17.99 12C17.99 11.7 17.99 11.61 15.72 9.09Z" fill="white"/></svg>
+            </button>
+            <button class="dist-thumb" id="dist-thumb-2" role="slider" aria-label="Country road and motorway boundary"
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="67" style="left:66.66%; bottom:0; transform:translate(-50%,50%);">
+              <svg width="12" height="12" viewBox="6 6 12 12" fill="none"><path d="M15.72 9.09L14.73 10L15.93 11.35H8.12L9.32 10L8.32 9.11C6.06 11.61 6.06 11.71 6.06 12C6.06 12.29 6.06 12.4 8.33 14.91L9.33 14.02L8.12 12.67H15.93L14.73 14L15.73 14.89C17.99 12.4 17.99 12.3 17.99 12C17.99 11.7 17.99 11.61 15.72 9.09Z" fill="white"/></svg>
+            </button>
+            <div class="dist-icon" id="dist-icon-0"><img src="assets/icons/icon-city.svg" alt="City"></div>
+            <div class="dist-icon" id="dist-icon-1"><img src="assets/icons/icon-country-road.svg" alt="Country Road"></div>
+            <div class="dist-icon" id="dist-icon-2"><img src="assets/icons/icon-motorway.svg" alt="Motorway"></div>
+          </div>
+          <div class="dist-labels">
+            <div class="dist-label" id="dist-label-0"><span class="dist-seg-pct">33%</span><span class="dist-seg-lbl">City</span></div>
+            <div class="dist-label" id="dist-label-1"><span class="dist-seg-pct">34%</span><span class="dist-seg-lbl">Country road</span></div>
+            <div class="dist-label" id="dist-label-2"><span class="dist-seg-pct">33%</span><span class="dist-seg-lbl">Motorway</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q2: Annual mileage -->
+      <div class="combo">
+        <div class="question">
+          <span class="question-label">How many miles do you drive a year?</span>
+          <button class="q-icon-btn" aria-label="More information: How many miles do you drive a year"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+        </div>
+        <div class="slider-wrap">
+          <div class="slider-track-area">
+            <div class="slider-active-track" id="miles-active"></div>
+            <input type="range" id="miles-slider" min="1000" max="30000" step="500" value="10000"
+                   aria-label="How many miles do you drive per year?" aria-valuetext="10000 miles" oninput="updateMiles()">
+            <div class="slider-thumb" id="miles-thumb">
+              <div class="slider-tooltip" id="miles-tip">10,000 mi</div>
+            </div>
+          </div>
+          <div class="slider-labels"><span>1,000 mi</span><span>30,000 mi</span></div>
+        </div>
+      </div>
+
+      <div class="combo-divider"></div>
+
+      <!-- Q3: Charging locations -->
+      <div class="combo">
+        <div class="question">
+          <span class="question-label">Select your charging location with charging costs.</span>
+          <button class="q-icon-btn" aria-label="More information: Select your charging location with charging costs"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+        </div>
+        <div class="charge-locs">
+
+          <!-- Home -->
+          <div>
+            <!-- Mobile: label+freq and input in same row -->
+            <div class="step-mobile-row">
+              <div class="step-freq-label">
+                <span class="label-bold">I charge at home:</span>&nbsp;<span class="label-freq" id="freq-label-home-m">often</span>
+              </div>
+              <div class="step-mobile-right">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-home-m" aria-label="Home charging price in pounds per kWh" value="0.24" step="0.01" min="0" max="9.99" oninput="syncInput('home','m')">
+                </div>
+                <label class="edit-icon-btn" for="price-home-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <!-- Desktop: label+slider left, input right -->
+            <div class="step-row">
+              <div class="step-label-col">
+                <div class="step-freq-label" id="freq-label-home-d-wrap" style="">
+                  <span class="label-bold">I charge at home:</span>&nbsp;<span class="label-freq" id="freq-label-home-d">often</span>
+                </div>
+                <div style="padding:0 18px;">
+                  <div class="step-track-wrap">
+                    <div class="step-line-base"></div>
+                    <div class="step-line-active" id="step-active-home"></div>
+                    <div id="step-dots-home"></div>
+                    <button class="step-thumb-el" id="step-thumb-home" data-loc="home" data-step="3" role="slider" aria-label="Home charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="3"></button>
+                  </div>
+                </div>
+              </div>
+              <div class="step-input-col">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-home-d" aria-label="Home charging price in pounds per kWh" value="0.24" step="0.01" min="0" max="9.99" oninput="syncInput('home','d')">
+                </div>
+                <label class="edit-icon-btn" for="price-home-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <!-- Mobile: slider below -->
+            <div class="step-mobile-row" style="margin-top:10px;">
+              <div style="flex:1; padding:0 18px;">
+                <div class="step-track-wrap" id="step-track-home-m">
+                  <div class="step-line-base"></div>
+                  <div class="step-line-active" id="step-active-home-m"></div>
+                  <div id="step-dots-home-m"></div>
+                  <button class="step-thumb-el" id="step-thumb-home-m" data-loc="home-m" data-step="3" role="slider" aria-label="Home charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="3"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Work -->
+          <div>
+            <div class="step-mobile-row">
+              <div class="step-freq-label">
+                <span class="label-bold">I charge at work:</span>&nbsp;<span class="label-freq" id="freq-label-work-m">sometimes</span>
+              </div>
+              <div class="step-mobile-right">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-work-m" aria-label="Work charging price in pounds per kWh" value="0.32" step="0.01" min="0" max="9.99" oninput="syncInput('work','m')">
+                </div>
+                <label class="edit-icon-btn" for="price-work-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-label-col">
+                <div class="step-freq-label">
+                  <span class="label-bold">I charge at work:</span>&nbsp;<span class="label-freq" id="freq-label-work-d">sometimes</span>
+                </div>
+                <div style="padding:0 18px;">
+                  <div class="step-track-wrap">
+                    <div class="step-line-base"></div>
+                    <div class="step-line-active" id="step-active-work"></div>
+                    <div id="step-dots-work"></div>
+                    <button class="step-thumb-el" id="step-thumb-work" data-loc="work" data-step="2" role="slider" aria-label="Work charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="2"></button>
+                  </div>
+                </div>
+              </div>
+              <div class="step-input-col">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-work-d" aria-label="Work charging price in pounds per kWh" value="0.32" step="0.01" min="0" max="9.99" oninput="syncInput('work','d')">
+                </div>
+                <label class="edit-icon-btn" for="price-work-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <div class="step-mobile-row" style="margin-top:10px;">
+              <div style="flex:1; padding:0 18px;">
+                <div class="step-track-wrap" id="step-track-work-m">
+                  <div class="step-line-base"></div>
+                  <div class="step-line-active" id="step-active-work-m"></div>
+                  <div id="step-dots-work-m"></div>
+                  <button class="step-thumb-el" id="step-thumb-work-m" data-loc="work-m" data-step="2" role="slider" aria-label="Work charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="2"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Public -->
+          <div>
+            <div class="step-mobile-row">
+              <div class="step-freq-label">
+                <span class="label-bold">I use public charging:</span>&nbsp;<span class="label-freq" id="freq-label-public-m">sometimes</span>
+              </div>
+              <div class="step-mobile-right">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-public-m" aria-label="Public charging charging price in pounds per kWh" value="0.52" step="0.01" min="0" max="9.99" oninput="syncInput('public','m')">
+                </div>
+                <label class="edit-icon-btn" for="price-public-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-label-col">
+                <div class="step-freq-label">
+                  <span class="label-bold">I use public charging:</span>&nbsp;<span class="label-freq" id="freq-label-public-d">sometimes</span>
+                </div>
+                <div style="padding:0 18px;">
+                  <div class="step-track-wrap">
+                    <div class="step-line-base"></div>
+                    <div class="step-line-active" id="step-active-public"></div>
+                    <div id="step-dots-public"></div>
+                    <button class="step-thumb-el" id="step-thumb-public" data-loc="public" data-step="2" role="slider" aria-label="Public charging charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="2"></button>
+                  </div>
+                </div>
+              </div>
+              <div class="step-input-col">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-public-d" aria-label="Public charging charging price in pounds per kWh" value="0.52" step="0.01" min="0" max="9.99" oninput="syncInput('public','d')">
+                </div>
+                <label class="edit-icon-btn" for="price-public-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <div class="step-mobile-row" style="margin-top:10px;">
+              <div style="flex:1; padding:0 18px;">
+                <div class="step-track-wrap" id="step-track-public-m">
+                  <div class="step-line-base"></div>
+                  <div class="step-line-active" id="step-active-public-m"></div>
+                  <div id="step-dots-public-m"></div>
+                  <button class="step-thumb-el" id="step-thumb-public-m" data-loc="public-m" data-step="2" role="slider" aria-label="Public charging charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="2"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Motorway -->
+          <div>
+            <div class="step-mobile-row">
+              <div class="step-freq-label">
+                <span class="label-bold">I charge at motorway:</span>&nbsp;<span class="label-freq" id="freq-label-motorway-m">occasionally</span>
+              </div>
+              <div class="step-mobile-right">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-motorway-m" aria-label="Motorway charging price in pounds per kWh" value="0.75" step="0.01" min="0" max="9.99" oninput="syncInput('motorway','m')">
+                </div>
+                <label class="edit-icon-btn" for="price-motorway-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <div class="step-row">
+              <div class="step-label-col">
+                <div class="step-freq-label">
+                  <span class="label-bold">I charge at motorway:</span>&nbsp;<span class="label-freq" id="freq-label-motorway-d">occasionally</span>
+                </div>
+                <div style="padding:0 18px;">
+                  <div class="step-track-wrap">
+                    <div class="step-line-base"></div>
+                    <div class="step-line-active" id="step-active-motorway"></div>
+                    <div id="step-dots-motorway"></div>
+                    <button class="step-thumb-el" id="step-thumb-motorway" data-loc="motorway" data-step="1" role="slider" aria-label="Motorway charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1"></button>
+                  </div>
+                </div>
+              </div>
+              <div class="step-input-col">
+                <div class="fl-input">
+                  <span class="fl-label">£ / kWh</span>
+                  <input type="number" id="price-motorway-d" aria-label="Motorway charging price in pounds per kWh" value="0.75" step="0.01" min="0" max="9.99" oninput="syncInput('motorway','d')">
+                </div>
+                <label class="edit-icon-btn" for="price-motorway-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+              </div>
+            </div>
+            <div class="step-mobile-row" style="margin-top:10px;">
+              <div style="flex:1; padding:0 18px;">
+                <div class="step-track-wrap" id="step-track-motorway-m">
+                  <div class="step-line-base"></div>
+                  <div class="step-line-active" id="step-active-motorway-m"></div>
+                  <div id="step-dots-motorway-m"></div>
+                  <button class="step-thumb-el" id="step-thumb-motorway-m" data-loc="motorway-m" data-step="1" role="slider" aria-label="Motorway charging frequency" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reset -->
+          <button type="button" class="reset-link" onclick="resetChargeInputs()">
+            <img src="assets/icons/icon-reload.svg" width="20" height="20" alt="">
+            <span class="reset-link-text">
+              <span class="reset-label">Reset values to default values</span>
+              <span class="reset-stroke"></span>
+            </span>
+          </button>
+
+        </div><!-- /charge-locs -->
+      </div>
+
+      <!-- Q4: Petrol & Diesel comparison prices -->
+      <div class="combo">
+        <div class="question">
+          <span class="question-label">Petrol and diesel prices for comparison</span>
+          <button class="q-icon-btn" aria-label="More information: Petrol and diesel prices for comparison"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+        </div>
+        <div class="fuel-row">
+          <div class="fuel-item">
+            <div class="fl-input">
+              <span class="fuel-item-label">Petrol:</span>
+              <input type="number" id="price-petrol" aria-label="Petrol price in pounds per litre" value="1.55" step="0.01" min="0" max="9.99" oninput="updateCost()">
+            </div>
+            <label class="edit-icon-btn" for="price-petrol"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+          </div>
+          <div class="fuel-item">
+            <div class="fl-input">
+              <span class="fuel-item-label">Diesel:</span>
+              <input type="number" id="price-diesel" aria-label="Diesel price in pounds per litre" value="1.60" step="0.01" min="0" max="9.99" oninput="updateCost()">
+            </div>
+            <label class="edit-icon-btn" for="price-diesel"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></label>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /input-section -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+      <div class="output-panel">
+
+        <!-- Model selection + car image -->
+        <div class="model-section">
+          <div class="combo">
+            <div class="question">
+              <span class="question-label">Which model are you interested in?</span>
+            </div>
+            <div class="select-group">
+              <div class="fl-select">
+                <span class="fl-label" id="trim-fl-label">The new ID.3 Neo</span>
+                <select id="trim-select" aria-label="Which model are you interested in?" onchange="onTrimChange()">
+                  <optgroup label="The new ID.3 Neo">
+                    <option value="Trend">Trend</option>
+                    <option value="Life">Life</option>
+                    <option value="Style">Style</option>
+                  </optgroup>
+                  <optgroup label="The new ID. Polo">
+                    <option value="PoloTrend">Trend</option>
+                    <option value="PoloLife">Life</option>
+                    <option value="PoloStyle">Style</option>
+                    <option value="PoloGTI">GTI</option>
+                  </optgroup>
+                </select>
+                <span class="fl-chevron"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg></span>
+              </div>
+              <div class="fl-select">
+                <span class="fl-label">Motor / Battery Capacity</span>
+                <select id="battery-select" aria-label="Motor and battery capacity" onchange="updateCost()">
+                  <option value="50">125 kW (170 PS) · 50 kWh</option>
+                </select>
+                <span class="fl-chevron"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg></span>
+              </div>
+            </div>
+          </div>
+          <div class="vehicle-asset">
+            <img src="../range-simulator/site-01/assets/media/id3/id3-trend.webp" alt="Volkswagen" id="car-img">
+          </div>
+          <p class="model-disclaimer" id="model-disclaimer">Electricity combined fuel consumption 22.7–22.5 kWh / 100 mi · CO₂ emissions combined 0 g / km</p>
+        </div>
+
+        <!-- Result card -->
+        <div class="result-card">
+          <div class="result-headline">
+            <span class="result-headline-text">Estimated costs and CO₂ emissions</span>
+          </div>
+          <!-- EV electricity cost -->
+          <div class="result-ev-block">
+            <div class="result-ev-label">Electricity cost:</div>
+            <div class="result-ev-value" id="result-ev-cost" aria-hidden="true">£–</div>
+            <p class="sr-only" id="cost-live" aria-live="polite"></p>
+          </div>
+          <!-- Freq + CO2 -->
+          <div class="result-row">
+            <div class="result-col">
+              <span class="result-col-label">Charging frequency:</span>
+              <span class="result-col-val-lg" id="result-freq">–</span>
+            </div>
+            <div class="result-col">
+              <span class="result-col-label">CO₂ emissions:</span>
+              <span class="result-col-val-lg" id="result-co2-ev">0 t CO₂</span>
+            </div>
+          </div>
+          <!-- Divider -->
+          <div class="result-divider"></div>
+          <!-- Petrol row -->
+          <div class="result-row">
+            <div class="result-col">
+              <span class="result-col-label">Petrol cost:</span>
+              <span class="result-col-val-sm" id="result-petrol-cost">£–</span>
+            </div>
+            <div class="result-col">
+              <span class="result-col-label">Petrol CO₂ emissions:</span>
+              <span class="result-col-val-sm" id="result-petrol-co2">– t CO₂</span>
+            </div>
+          </div>
+          <!-- Diesel row -->
+          <div class="result-row">
+            <div class="result-col">
+              <span class="result-col-label">Diesel cost:</span>
+              <span class="result-col-val-sm" id="result-diesel-cost">£–</span>
+            </div>
+            <div class="result-col">
+              <span class="result-col-label">Diesel CO₂ emissions:</span>
+              <span class="result-col-val-sm" id="result-diesel-co2">– t CO₂</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA — outside card, standard navy outline -->
+        <button class="cta-button">Configure this ID. model &nbsp;→</button>
+
+      </div>
+    </div><!-- /right-col -->
+
+  </div><!-- /section-container -->
+
+  <!-- Sticky bar (mobile) -->
+  <div class="sticky-result" id="sticky-result">
+    <div class="sticky-label" id="sticky-model-name">The new ID.3 Neo Trend</div>
+    <div class="sticky-ev-value" id="sticky-ev-cost" aria-hidden="true">£–</div>
+    <div class="sticky-label">per year</div>
+  </div>
+
+  <div class="disclaimer">
+    <span class="disclaimer-num">1</span>
+    <p class="disclaimer-copy">Estimated costs are calculated based on multiplying the price of electricity per charge with the number of charges needed in a year, based on the vehicles WLTP range and energy consumption and the users selected mileage and driving profile. Annual costs, CO₂ emissions and charging frequency are estimates for the standard UK specification vehicle (model year 2026) based on user inputs (including annual distance), test values (including WLTP combined consumption), the vehicle you chose (including net battery capacity) and average values (including electricity costs). Assumes charging from 0–100% and 100% of the battery's rated charge capacity. For information and comparability only. Results should not be relied upon. Real world results will differ. Petrol and diesel comparisons assume 8.0 l/100km and 7.0 l/100km respectively. CO₂ based on 2.31 kg/l petrol and 2.68 kg/l diesel. Data correct as at February 2026.</p>
+  </div>
+
+</div><!-- /simulator -->
+</div><!-- /content -->
+
+<script>
+// ── Vehicle data ──
+const battCapacities = { '50':52,'58':58,'79':77,'37a':40,'37b':40,'52a':55,'52b':55 };
+const consumptionKWh = {
+  Trend_50:22.6, Life_50:22.5, Life_58:23.65, Life_79:24.15,
+  Style_50:24.1, Style_58:23.9, Style_79:24.3,
+  PoloTrend_37a:21.4, PoloLife_37a:21.75, PoloLife_37b:22.05, PoloLife_52a:22.35,
+  PoloStyle_37b:22.2, PoloStyle_52a:22.55, PoloGTI_52b:23.5
+};
+const consumptionLabels = {
+  Trend_50:'22.7–22.5 kWh / 100 mi', Life_50:'25.1–22.5 kWh / 100 mi',
+  Life_58:'24.9–22.4 kWh / 100 mi', Life_79:'25.3–23.0 kWh / 100 mi',
+  Style_50:'25.3–22.9 kWh / 100 mi', Style_58:'25.1–22.7 kWh / 100 mi',
+  Style_79:'25.4–23.2 kWh / 100 mi',
+  PoloTrend_37a:'22.2–20.6 kWh / 100 mi', PoloLife_37a:'22.7–20.8 kWh / 100 mi',
+  PoloLife_37b:'23.0–21.1 kWh / 100 mi', PoloLife_52a:'23.3–21.4 kWh / 100 mi',
+  PoloStyle_37b:'23.2–21.2 kWh / 100 mi', PoloStyle_52a:'23.5–21.6 kWh / 100 mi',
+  PoloGTI_52b:'24.6–22.4 kWh / 100 mi',
+};
+const batteryOptions = {
+  Trend:     [{ v:'50',  l:'125 kW (170 PS) · 50 kWh' }],
+  Life:      [{ v:'50',  l:'125 kW (170 PS) · 50 kWh' },{ v:'58', l:'140 kW (190 PS) · 58 kWh' },{ v:'79', l:'170 kW (231 PS) · 79 kWh' }],
+  Style:     [{ v:'50',  l:'125 kW (170 PS) · 50 kWh' },{ v:'58', l:'140 kW (190 PS) · 58 kWh' },{ v:'79', l:'170 kW (231 PS) · 79 kWh' }],
+  PoloTrend: [{ v:'37a', l:'85 kW (116 PS) · 37 kWh' }],
+  PoloLife:  [{ v:'37a', l:'85 kW (116 PS) · 37 kWh' },{ v:'37b', l:'99 kW (135 PS) · 37 kWh' },{ v:'52a', l:'155 kW (211 PS) · 52 kWh' }],
+  PoloStyle: [{ v:'37b', l:'99 kW (135 PS) · 37 kWh' },{ v:'52a', l:'155 kW (211 PS) · 52 kWh' }],
+  PoloGTI:   [{ v:'52b', l:'166 kW (226 PS) · 52 kWh' }],
+};
+const carImages = {
+  Trend:'../range-simulator/site-01/assets/media/id3/id3-trend.webp',
+  Life:'../range-simulator/site-01/assets/media/id3/id3-life.webp',
+  Style:'../range-simulator/site-01/assets/media/id3/id3-style.webp',
+  PoloTrend:'../range-simulator/site-01/assets/media/idpolo/idpolo-trend.webp',
+  PoloLife:'../range-simulator/site-01/assets/media/idpolo/idpolo-life.webp',
+  PoloStyle:'../range-simulator/site-01/assets/media/idpolo/idpolo-style.webp',
+  PoloGTI:'../range-simulator/site-01/assets/media/idpolo/idpolo-gti.webp',
+};
+const trimGroupLabels = {
+  Trend:'The new ID.3 Neo', Life:'The new ID.3 Neo', Style:'The new ID.3 Neo',
+  PoloTrend:'The new ID. Polo', PoloLife:'The new ID. Polo',
+  PoloStyle:'The new ID. Polo', PoloGTI:'The new ID. Polo',
+};
+const trimNames = {
+  Trend:'The new ID.3 Neo Trend', Life:'The new ID.3 Neo Life', Style:'The new ID.3 Neo Style',
+  PoloTrend:'The new ID. Polo Trend', PoloLife:'The new ID. Polo Life',
+  PoloStyle:'The new ID. Polo Style', PoloGTI:'The new ID. Polo GTI',
+};
+
+// ── Step slider data ──
+const stepLabels  = ['never','occasionally','sometimes','often','always'];
+const stepWeights = [0, 0.15, 0.35, 0.65, 1.0];
+const defaultPrices = { home:0.24, work:0.32, public:0.52, motorway:0.75 };
+const defaultSteps  = { home:3, work:2, public:2, motorway:1 };
+
+// Shared state: use the desktop (canonical) step
+const chargeSteps = { home:3, work:2, public:2, motorway:1 };
+
+// ── Distribution control (ported from range-simulator) ──
+function initDistSlider() {
+  const block  = document.getElementById('dist-block');
+  const thumb1 = document.getElementById('dist-thumb-1');
+  const thumb2 = document.getElementById('dist-thumb-2');
+  const div1   = document.getElementById('dist-divider-1');
+  const div2   = document.getElementById('dist-divider-2');
+  const icons  = [0,1,2].map(i => document.getElementById('dist-icon-' + i));
+  const labels = [0,1,2].map(i => document.getElementById('dist-label-' + i));
+  if (!block || !thumb1 || !thumb2) return;
+
+  // Even thirds, matching range-simulator/site-02: displays 33 / 34 / 33.
+  let pct1 = 33.33, pct2 = 66.66;
+  const ICON_MAX = 24, ICON_MIN = 10;
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function setPositions() {
+    thumb1.style.left = pct1 + '%';
+    thumb2.style.left = pct2 + '%';
+    if (div1) div1.style.left = pct1 + '%';
+    if (div2) div2.style.left = pct2 + '%';
+
+    const centres = [pct1 / 2, (pct1 + pct2) / 2, (pct2 + 100) / 2];
+    const widths  = [pct1, pct2 - pct1, 100 - pct2];
+
+    icons.forEach((icon, i) => {
+      if (!icon) return;
+      icon.style.left = centres[i] + '%';
+      const wPct = widths[i];
+      const size = clamp(ICON_MIN + (ICON_MAX - ICON_MIN) * (wPct - 5) / 15, ICON_MIN, ICON_MAX);
+      const opacity = wPct < 4 ? 0 : Math.min(1, (wPct - 4) / 4);
+      icon.style.width   = size + 'px';
+      icon.style.height  = size + 'px';
+      icon.style.opacity = opacity;
+    });
+
+    const v1 = Math.round(pct1), v2 = Math.round(pct2);
+    const vals = [v1, v2 - v1, 100 - v2];
+    labels.forEach((label, i) => {
+      if (!label) return;
+      label.querySelector('.dist-seg-pct').textContent = vals[i] + '%';
+    });
+
+    // SC 4.1.2: role=slider means the exposed value must follow the visual
+    // position on every path, or AT reads a stale number.
+    thumb1.setAttribute('aria-valuenow', String(v1));
+    thumb1.setAttribute('aria-valuetext', v1 + '% city');
+    thumb2.setAttribute('aria-valuenow', String(v2));
+    thumb2.setAttribute('aria-valuetext', v2 + '% by country road boundary');
+    updateCost();
+  }
+
+  function makeDraggable(thumb, isThumb1) {
+    function onMove(e) {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const rect = block.getBoundingClientRect();
+      const raw = ((clientX - rect.left) / rect.width) * 100;
+      if (isThumb1) pct1 = clamp(raw, 0, 100);
+      else          pct2 = clamp(raw, 0, 100);
+      if (pct1 > pct2) { if (isThumb1) pct1 = pct2; else pct2 = pct1; }
+      setPositions();
+    }
+    function onEnd() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+    }
+    thumb.addEventListener('mousedown', e => {
+      e.preventDefault();
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+    });
+    thumb.addEventListener('touchstart', e => {
+      e.preventDefault();
+      document.addEventListener('touchmove', onMove, {passive:false});
+      document.addEventListener('touchend', onEnd);
+    }, {passive:false});
+  }
+
+  makeDraggable(thumb1, true);
+  makeDraggable(thumb2, false);
+
+  // SC 2.1.1: there was no keydown handler in the file, so this control was
+  // mouse/touch only. SC 2.5.7: the block itself had no click listener either.
+  (function distA11y(){
+    const blk = document.getElementById('dist-block');
+    function nudge(which, d) {
+      if (which === 1) pct1 = Math.max(0, Math.min(pct1 + d, pct2 - 1));
+      else             pct2 = Math.min(100, Math.max(pct2 + d, pct1 + 1));
+      setPositions();
+    }
+    [[thumb1, 1], [thumb2, 2]].forEach(([t, which]) => {
+      if (!t) return;
+      t.addEventListener('keydown', e => {
+        const step = (e.key === 'PageUp' || e.key === 'PageDown') ? 10 : 1;
+        let d = 0;
+        if (['ArrowRight','ArrowUp','PageUp'].includes(e.key)) d = step;
+        else if (['ArrowLeft','ArrowDown','PageDown'].includes(e.key)) d = -step;
+        else if (e.key === 'Home') d = -100;
+        else if (e.key === 'End') d = 100;
+        else return;
+        e.preventDefault();
+        nudge(which, d);
+      });
+    });
+    if (blk) blk.addEventListener('click', e => {
+      if (e.target.closest('.dist-thumb')) return;
+      const r = blk.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)));
+      if (Math.abs(pct - pct1) <= Math.abs(pct - pct2)) nudge(1, pct - pct1);
+      else nudge(2, pct - pct2);
+    });
+  })();
+
+  setPositions();
+}
+
+function getDistWeights() {
+  return [0,1,2].map(i => {
+    const el = document.getElementById('dist-label-' + i);
+    return el ? parseFloat(el.querySelector('.dist-seg-pct').textContent) / 100 : 1/3;
+  });
+}
+
+// ── Miles slider ──
+function updateMiles() {
+  // keep aria-valuetext honest; a stale one is worse than none
+  (function(){
+    const sl = document.getElementById('miles-slider');
+    if (sl) sl.setAttribute('aria-valuetext',
+      Number(sl.value).toLocaleString('en-GB') + ' miles per year');
+  })();
+  const s   = document.getElementById('miles-slider');
+  const v   = parseFloat(s.value);
+  const pct = (v - 1000) / (30000 - 1000) * 100;
+  const thumb  = document.getElementById('miles-thumb');
+  const tip    = document.getElementById('miles-tip');
+  const active = document.getElementById('miles-active');
+  thumb.style.left   = pct + '%';
+  active.style.width = pct + '%';
+  tip.textContent = v.toLocaleString('en-GB') + ' mi';
+  tip.classList.remove('align-left','align-right');
+  if (pct < 10) tip.classList.add('align-left');
+  else if (pct > 90) tip.classList.add('align-right');
+  updateCost();
+}
+
+// ── Step sliders ──
+// loc: 'home' | 'work' | 'public' | 'motorway'
+// suffix: '' (desktop) | '-m' (mobile)
+function buildStepSlider(loc, suffix) {
+  const sid     = loc + (suffix || '');
+  const dotsEl  = document.getElementById('step-dots-' + sid);
+  const thumb   = document.getElementById('step-thumb-' + sid);
+  const active  = document.getElementById('step-active-' + sid);
+  if (!dotsEl || !thumb || !active) return;
+
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.id = 'dot-' + sid + '-' + i;
+    d.className = 'step-dot ' + (i < chargeSteps[loc] ? 'active' : 'inactive');
+    d.style.left = (i / 4 * 100) + '%';
+    dotsEl.appendChild(d);
+  }
+
+  function setStep(step) {
+    chargeSteps[loc] = Math.max(0, Math.min(4, step));
+    const pct = chargeSteps[loc] / 4 * 100;
+    // Update both desktop + mobile sliders for this loc
+    ['', '-m'].forEach(sfx => {
+      const tEl = document.getElementById('step-thumb-' + loc + sfx);
+      const aEl = document.getElementById('step-active-' + loc + sfx);
+      if (tEl) tEl.style.left = pct + '%';
+      if (aEl) aEl.style.width = pct + '%';
+      for (let i = 0; i < 5; i++) {
+        const dot = document.getElementById('dot-' + loc + sfx + '-' + i);
+        if (dot) { dot.classList.toggle('active', i < chargeSteps[loc]); dot.classList.toggle('inactive', i >= chargeSteps[loc]); }
+      }
+    });
+    // Update freq labels (desktop + mobile)
+    const ld = document.getElementById('freq-label-' + loc + '-d');
+    const lm = document.getElementById('freq-label-' + loc + '-m');
+    if (ld) ld.textContent = stepLabels[chargeSteps[loc]];
+    if (lm) lm.textContent = stepLabels[chargeSteps[loc]];
+    // SC 4.1.2: keep the exposed value and its text in step with the dots.
+    ['', '-m'].forEach(sfx => {
+      const t = document.getElementById('step-thumb-' + loc + sfx);
+      if (t) {
+        t.setAttribute('aria-valuenow', String(chargeSteps[loc]));
+        t.setAttribute('aria-valuetext', stepLabels[chargeSteps[loc]]);
+      }
+    });
+    updateCost();
+  }
+
+  function pctToStep(pct) { return Math.max(0, Math.min(4, Math.round(pct / 100 * 4))); }
+
+  // SC 2.1.1: the frequency sliders were drag-only. The track already had a click
+  // listener (which is why 2.5.7 passed here), but no keyboard path existed.
+  ['', '-m'].forEach(sfx => {
+    const t = document.getElementById('step-thumb-' + loc + sfx);
+    if (!t) return;
+    t.addEventListener('keydown', e => {
+      let d = 0;
+      if (['ArrowRight','ArrowUp','PageUp'].includes(e.key)) d = 1;
+      else if (['ArrowLeft','ArrowDown','PageDown'].includes(e.key)) d = -1;
+      else if (e.key === 'Home') d = -4;
+      else if (e.key === 'End') d = 4;
+      else return;
+      e.preventDefault();
+      setStep(chargeSteps[loc] + d);
+    });
+  });
+
+  function onMove(e) {
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const wrap = thumb.closest('.step-track-wrap');
+    const rect = wrap.getBoundingClientRect();
+    setStep(pctToStep((cx - rect.left) / rect.width * 100));
+  }
+  function onEnd() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+  }
+  thumb.addEventListener('mousedown', e => {
+    e.preventDefault();
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+  });
+  thumb.addEventListener('touchstart', e => {
+    e.preventDefault();
+    document.addEventListener('touchmove', onMove, {passive:false});
+    document.addEventListener('touchend', onEnd);
+  }, {passive:false});
+
+  const wrap = thumb.closest('.step-track-wrap');
+  if (wrap) {
+    wrap.addEventListener('click', e => {
+      if (e.target === thumb) return;
+      const rect = wrap.getBoundingClientRect();
+      setStep(pctToStep((e.clientX - rect.left) / rect.width * 100));
+    });
+  }
+
+  setStep(defaultSteps[loc]);
+}
+
+// ── Sync inputs (desktop ↔ mobile) ──
+function syncInput(loc, from) {
+  const dEl = document.getElementById('price-' + loc + '-d');
+  const mEl = document.getElementById('price-' + loc + '-m');
+  if (!dEl || !mEl) return;
+  if (from === 'd') mEl.value = dEl.value;
+  else              dEl.value = mEl.value;
+  updateCost();
+}
+
+function getPrice(loc) {
+  const el = document.getElementById('price-' + loc + '-d');
+  const v  = el ? parseFloat(el.value) : NaN;
+  return isNaN(v) ? defaultPrices[loc] : v;
+}
+
+function resetChargeInputs() {
+  ['home','work','public','motorway'].forEach(loc => {
+    const d = document.getElementById('price-' + loc + '-d');
+    const m = document.getElementById('price-' + loc + '-m');
+    if (d) d.value = defaultPrices[loc];
+    if (m) m.value = defaultPrices[loc];
+    chargeSteps[loc] = defaultSteps[loc];
+    buildStepSlider(loc, '');
+    buildStepSlider(loc, '-m');
+  });
+  updateCost();
+}
+
+// ── Model selection ──
+function onTrimChange() {
+  const trim = document.getElementById('trim-select').value;
+  const groupEl = document.getElementById('trim-fl-label');
+  if (groupEl) groupEl.textContent = trimGroupLabels[trim] || 'The new ID.3 Neo';
+  const opts = batteryOptions[trim] || batteryOptions.Trend;
+  const sel  = document.getElementById('battery-select');
+  sel.innerHTML = opts.map(o => `<option value="${o.v}">${o.l}</option>`).join('');
+  const img = document.getElementById('car-img');
+  if (img && carImages[trim]) img.src = carImages[trim];
+  const stickyName = document.getElementById('sticky-model-name');
+  if (stickyName) stickyName.textContent = trimNames[trim] || trim;
+  updateCost();
+}
+
+// ── Cost calculation ──
+function buildCostSlots(container, pounds) {
+  const str = String(pounds);
+  const digits = str.split('').map(Number);
+  const len = digits.length;
+  const existing = container.querySelectorAll('.slot-digit');
+
+  if (existing.length !== len) {
+    container.innerHTML = '';
+    const pfx = document.createElement('span');
+    pfx.textContent = '£';
+    container.appendChild(pfx);
+    digits.forEach((_, i) => {
+      if (len > 3 && i === len - 3) {
+        const sep = document.createElement('span');
+        sep.style.margin = '0 1px';
+        sep.textContent = ',';
+        container.appendChild(sep);
+      }
+      const col = document.createElement('span');
+      col.className = 'slot-digit';
+      const reel = document.createElement('span');
+      reel.className = 'slot-reel';
+      for (let k = 0; k <= 9; k++) {
+        const d = document.createElement('span');
+        d.textContent = k;
+        reel.appendChild(d);
+      }
+      col.appendChild(reel);
+      container.appendChild(col);
+    });
+  }
+
+  container.querySelectorAll('.slot-digit').forEach((col, i) => {
+    const reel = col.querySelector('.slot-reel');
+    reel.style.transitionDelay = (len - 1 - i) * 60 + 'ms';
+    reel.style.transform = `translateY(-${digits[i]}em)`;
+  });
+}
+
+function updateCost() {
+  const trim = document.getElementById('trim-select').value;
+  const batt = document.getElementById('battery-select').value;
+  const key  = trim + '_' + batt;
+  const consumption = consumptionKWh[key] || 22.6;
+  const annualMiles = parseFloat(document.getElementById('miles-slider').value) || 10000;
+  const annualKWh   = annualMiles * consumption / 100;
+
+  // Update disclaimer
+  const el = document.getElementById('model-disclaimer');
+  if (el) el.textContent = consumptionLabels[key]
+    ? 'Electricity combined fuel consumption ' + consumptionLabels[key] + ' · CO₂ emissions combined 0 g / km'
+    : 'CO₂ emissions combined 0 g / km';
+
+  // Weighted electricity price
+  const locs = ['home','work','public','motorway'];
+  let wSum = 0, wTotal = 0;
+  locs.forEach(loc => {
+    const w = stepWeights[chargeSteps[loc]];
+    wSum   += w * getPrice(loc);
+    wTotal += w;
+  });
+  const wPrice = wTotal > 0 ? wSum / wTotal : 0.30;
+  const annualEvCost = annualKWh * wPrice;
+
+  // Charges per week
+  const netBatt = battCapacities[batt] || 52;
+  const chargesPerYear = netBatt > 0 ? annualKWh / (netBatt * 0.8) : 0;
+  const chargesPerWeek = chargesPerYear / 52;
+
+  // Combustion cost + CO2
+  const annualKm     = annualMiles * 1.60934;
+  const petrolL      = annualKm * 8.0 / 100;
+  const dieselL      = annualKm * 7.0 / 100;
+  const petrolPrice  = parseFloat(document.getElementById('price-petrol').value) || 1.55;
+  const dieselPrice  = parseFloat(document.getElementById('price-diesel').value) || 1.60;
+  const annualPetrolCost = petrolL * petrolPrice;
+  const annualDieselCost = dieselL * dieselPrice;
+  const petrolCO2    = petrolL * 2.31 / 1000;
+  const dieselCO2    = dieselL * 2.68 / 1000;
+
+  function fmt(v) { return '£' + Math.round(v).toLocaleString('en-GB'); }
+
+  buildCostSlots(document.getElementById('result-ev-cost'), Math.round(annualEvCost));
+  document.getElementById('result-freq').textContent        = chargesPerWeek.toFixed(1) + 'x / week';
+  document.getElementById('result-co2-ev').textContent      = '0 t CO₂';
+  document.getElementById('result-petrol-cost').textContent = fmt(annualPetrolCost);
+  document.getElementById('result-petrol-co2').textContent  = petrolCO2.toFixed(2) + ' t CO₂';
+  document.getElementById('result-diesel-cost').textContent = fmt(annualDieselCost);
+  document.getElementById('result-diesel-co2').textContent  = dieselCO2.toFixed(2) + ' t CO₂';
+
+  const sc = document.getElementById('sticky-ev-cost');
+  if (sc) buildCostSlots(sc, Math.round(annualEvCost));
+  // SC 1.3.1 / 4.1.3: the reels are aria-hidden because their textContent is every
+  // digit of every column (42 chars for "£2,119"). This is the only accessible form
+  // of the result and, being aria-live, it announces each recomputation.
+  const live = document.getElementById('cost-live');
+  if (live) {
+    const txt = 'Estimated electricity cost ' +
+                Math.round(annualEvCost).toLocaleString('en-GB') + ' pounds per year';
+    if (live.dataset.last !== txt) { live.dataset.last = txt; live.textContent = txt; }
+  }
+}
+
+// ── Sticky bar (mobile) ──
+function initSticky() {
+  const bar = document.getElementById('sticky-result');
+  if (!bar) return;
+  const check = () => {
+    if (window.innerWidth >= 960) { bar.classList.remove('visible'); return; }
+    const rc = document.querySelector('.result-card');
+    if (!rc) return;
+    const rect = rc.getBoundingClientRect();
+    bar.classList.toggle('visible', rect.bottom < 0 || rect.top > window.innerHeight);
+  };
+  window.addEventListener('scroll', check, {passive:true});
+  window.addEventListener('resize', check);
+  bar.addEventListener('click', () => {
+    const rc = document.querySelector('.result-card');
+    if (rc) rc.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  check();
+}
+
+// ── Init ──
+window.addEventListener('DOMContentLoaded', () => {
+  initDistSlider();
+  ['home','work','public','motorway'].forEach(loc => {
+    buildStepSlider(loc, '');
+    buildStepSlider(loc, '-m');
+  });
+  updateMiles();
+  onTrimChange();
+  initSticky();
+});
+
+// SC 3.3.1 Error Identification + 3.3.3 Error Suggestion.
+// Every price field declares min/max, so an out-of-range value IS automatically
+// detected (validity.rangeOverflow). Nothing reported it, and updateCost() computed
+// on the raw value — 999 in a max="9.99" field produced "978,966 pounds per year"
+// presented as a valid answer. Now: aria-invalid, and a text message naming the range.
+(function priceValidation(){
+  function ensureErrorNode(el){
+    const id = el.id + '-err';
+    let node = document.getElementById(id);
+    if (!node) {
+      node = document.createElement('span');
+      node.id = id; node.className = 'field-error'; node.hidden = true;
+      el.insertAdjacentElement('afterend', node);
+    }
+    return node;
+  }
+  function validate(el){
+    const node = ensureErrorNode(el);
+    const bad = el.value !== '' && (el.validity.rangeOverflow || el.validity.rangeUnderflow);
+    if (bad) {
+      el.setAttribute('aria-invalid','true');
+      el.setAttribute('aria-describedby', node.id);
+      node.textContent = 'Enter a value between ' + el.getAttribute('min') + ' and ' + el.getAttribute('max') + '.';
+      node.hidden = false;
+    } else {
+      el.removeAttribute('aria-invalid');
+      if (el.getAttribute('aria-describedby') === node.id) el.removeAttribute('aria-describedby');
+      node.hidden = true; node.textContent = '';
+    }
+  }
+  document.querySelectorAll('input[type=number][min][max]').forEach(el => {
+    el.addEventListener('input', () => validate(el));
+    el.addEventListener('blur',  () => validate(el));
+  });
+})();
+</script>
+</body>
+</html>
