@@ -1180,7 +1180,14 @@ function buildStepSlider(loc, suffix) {
   // listener (which is why 2.5.7 passed here), but no keyboard path existed.
   ['', '-m'].forEach(sfx => {
     const t = document.getElementById('step-thumb-' + loc + sfx);
-    if (!t) return;
+    // buildStepSlider() runs twice per location, and resetChargeInputs() calls it
+    // again — so this used to stack a keydown listener on every thumb each time.
+    // Two listeners meant one ArrowRight moved two steps, and after a Reset a
+    // keyboard user could reach only the two ends: `occasionally` and `often` were
+    // unreachable by keyboard while a mouse user could click either. SC 2.1.1.
+    // Bind once per element, ever.
+    if (!t || t.dataset.keysBound) return;
+    t.dataset.keysBound = '1';
     t.addEventListener('keydown', e => {
       let d = 0;
       if (['ArrowRight','ArrowUp','PageUp'].includes(e.key)) d = 1;

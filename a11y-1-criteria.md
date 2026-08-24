@@ -83,7 +83,7 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 22 controls keyboard-operable, including the eight `role="slider"` step thumbs (arrow-key handlers) and `button.reset-link`. |
+| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 22 controls keyboard-operable, including the eight `role="slider"` step thumbs and `button.reset-link`. **This was a Level A failure until 2026-08-24** and no scanner saw it: `buildStepSlider()` runs twice per location and `resetChargeInputs()` calls it again, so each thumb accumulated `keydown` listeners. One ArrowRight moved **two** steps, and after one Reset it jumped straight to the maximum — a keyboard user could never reach `occasionally` or `often`, while a mouse user could click either. Fixed by binding once per element (`dataset.keysBound`); guarding on `suffix === ''` is **not** sufficient because it still re-binds on Reset. Five regression tests now hold it. |
 | **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 22 stops and returns to the first. |
 | **2.1.4** | Character Key Shortcuts | A | No | ⚪ N/A | No single-character key shortcuts are registered. |
 
