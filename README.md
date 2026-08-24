@@ -1,0 +1,110 @@
+# VW Cost Simulator — accessibility reference build
+
+A working, WCAG 2.2 AA reference build. **It is a behavioural specification, not source to copy.** The defects that shipped here were invisible to every automated tool — they were found only by reading the accessibility tree.
+
+**Live:** https://yikcunchung.github.io/vw-cost-simulator-prototype/
+
+---
+
+## If you are the developer porting this — read this section only
+
+You need **six things**. Everything else in this repo is evidence for auditors.
+
+### 1. 9 inline SVGs must be aria-hidden or named
+
+```
+<!-- decorative -->
+<svg aria-hidden="true" focusable="false">…</svg>
+```
+
+**Why:** The 9 decorative SVGs shipped unnamed. Chrome maps a bare <svg> to role=image with an empty name.
+
+> axe returns inapplicable for an <svg> without a role. The AX-tree assertion proves it.
+
+### 2. Every slider is keyboard operable and exposes its value
+
+```
+thumb.setAttribute("role", "slider");
+thumb.setAttribute("aria-valuenow", current);
+thumb.setAttribute("aria-valuetext", current + " p/kWh");
+thumb.addEventListener("keydown", e => { /* arrows, Home, End */ });
+```
+
+**Why:** 6 of 11 pointer widgets had no keyboard equivalent. 10 button-based thumbs had role=button, no value, no key handler.
+
+> role=button is wrong for a slider thumb. The valuetext is what a screen reader reads.
+
+### 3. Visible label text must appear in the accessible name
+
+```
+<!-- ✓ aria-labelledby points at the visible label -->
+<label id="motor-label">Motor / Battery Capacity</label>
+<select aria-labelledby="motor-label">…</select>
+```
+
+**Why:** SC 2.5.3: visible "Motor / Battery Capacity" against aria-label "Motor and battery capacity" — the "/" became "and". axe has no label-in-name rule and returned 0 violations.
+
+> Use aria-labelledby for any control with a visible label. Never retype the label into aria-label.
+
+### 4. Animated digit reels must be aria-hidden; publish the real value as text
+
+```
+<div class="slot-reel" aria-hidden="true">…</div>
+<p class="sr-only" aria-live="polite" aria-atomic="true"></p>
+```
+
+**Why:** The headline figure was exposed as 42 characters — "£0123456789,012345678…" — instead of "£2,119".
+
+> Six figures update simultaneously. One live region, one writer. Clear it after ~3s.
+
+### 5. Alt text must describe the specific image shown
+
+```
+// ✓ reassign alt whenever src changes
+img.src = variant.src;
+img.alt = "Volkswagen " + variant.name + ", front three-quarter view";
+```
+
+**Why:** The car image carried alt="Volkswagen" — a name that was present but described nothing about the actual vehicle or variant.
+
+> A present-but-wrong alt passes axe. SC 1.1.1 requires an equivalent, not merely a non-empty string.
+
+### 6. Every focusable control has a visible focus ring
+
+```
+.fl-select select:focus-visible { outline: 2px solid #C86C03; }
+.spin-btn:focus-visible    { outline: 2px solid #C86C03; }
+```
+
+**Why:** 9 of 20 focus stops painted zero indicator pixels.
+
+> Never remove outline without a named replacement.
+
+---
+
+## How you know you are done
+
+```bash
+npm install
+npm test
+```
+
+**176 tests over 4 viewports.** They encode all six rules above plus the scanner checks. Green means you have it.
+
+> **These six exist because every one of them was invisible to axe, WAVE and Nu.**
+
+---
+
+## Everything else in this repo
+
+You do not need these to build.
+
+| File | Who it is for |
+|---|---|
+| [`a11y-3-implementation.md`](a11y-3-implementation.md) | The full version of the six rules, plus 17 more standard for any VW app. |
+| [`a11y-2-automated-testing.md`](a11y-2-automated-testing.md) | What the tools prove, the test procedure, and the recorded results. |
+| [`a11y-1-criteria.md`](a11y-1-criteria.md) | All 56 WCAG A/AA criteria, one row each. For the auditor — look up, don't read through. |
+
+## One known failure, not yours to fix
+
+The `<select>` border is `rgb(161,164,172)` — **2.29:1** against the page where WCAG needs 3:1. Core component value — raise it upstream, never darken locally. (`#8b8e96` passes at 3.01:1.)
