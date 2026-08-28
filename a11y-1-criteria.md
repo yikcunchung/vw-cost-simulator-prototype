@@ -171,7 +171,7 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **4.1.1** | Parsing | A | Yes | ✅ Pass | Nu HTML validator: **0 errors**. Obsolete in WCAG 2.2 but normative under EN 301 549 clause 9.4.1.1, so it is checked and kept. |
-| **4.1.2** | Name, Role, Value | A | Yes | ⚖️ Decide | **AX tree: 426 nodes, 43 named, 0 unnamed, 0 duplicate role+name among interactive controls.** The eight step thumbs expose `role="slider"` with `aria-valuemin`/`max`/`now`. 21 focusable controls, all named. **Decide:** `#trim-select` takes its name from a label whose text JavaScript rewrites on every change, so the accessible name mutates with the value — see the decisions table. |
+| **4.1.2** | Name, Role, Value | A | Yes | ⚖️ Decide | **AX tree: 426 nodes, 43 named, 0 unnamed, 0 duplicate role+name among interactive controls.** The eight step thumbs expose `role="slider"` with `aria-valuemin`/`max`/`now`. 21 focusable controls, all named. `#trim-select`'s name comes from `aria-labelledby="q-model trim-fl-label"` — the purpose-describing half ("Which model are you interested in?") is permanently stable; only the value half ("The new ID.3 Neo") mutates, same as any control whose display also shows its current value. **One decision remains** — see the decisions table. |
 | **4.1.3** | Status Messages | AA | Yes | ✅ Pass | `#cost-live` (`aria-live="polite"`, in the DOM at load, 1×1 clipped with an explicit white `color`) announces every recomputation — driven through 7 distinct announcements, e.g. "Estimated electricity cost 848 pounds per year" → 844 → 904. |
 
 ---
@@ -181,12 +181,11 @@ criteria are not required and are not listed.
 **No open criteria and no known failures.** Every Level A/AA criterion is verified, inspected, or
 not applicable.
 
-**One criterion carries decisions to record — two positions, both under 4.1.2.** Both pass; they need a recorded position, not code:
+**One criterion carries a decision to record — under 4.1.2.** It passes; it needs a recorded position, not code:
 
 | SC | Decision |
 |---|---|
 | **4.1.2** Name, Role, Value | Six `<img alt="Edit">` graphics sit inside `<label>`s and produce six identically named graphics in the accessibility tree. They are **not controls** — no role, no tabindex, no handler — and the six spinbuttons they label each have a unique name, so nothing is ambiguous to operate. But a screen-reader user reading the card linearly hears six "Edit" graphics with no indication of *what* is edited. `alt=""` would be semantically correct; it was deliberately avoided because it produced 10 WAVE "Empty form label" errors. Adding `aria-hidden="true"` to the `<img>` is the likely resolution — **re-verify against WAVE before shipping it.** |
-| **4.1.2** Name, Role, Value | The `#trim-select` combobox takes its accessible name from `#trim-fl-label`, whose text JavaScript **rewrites on every change** to the model-group name. So the name is "The new ID.3 Neo" rather than a stable field label like "Equipment line", and it *mutates as the value changes*. A screen reader announces "The new ID.3 Neo, combobox … The new ID.3 Neo group, Trend". Not a hard AA failure — the name is present, unique and accurate at the moment it is read — but a mutating name is fragile. Prefer a stable visible label. |
 
 **One thing no automated pass can close:** a screen-reader run. VoiceOver is planned; the protocol
 names NVDA 2026.1.1.55980, so record that as a deviation. Two tool runs also remain — one pass
