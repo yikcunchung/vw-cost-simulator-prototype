@@ -21,9 +21,10 @@
   --navy-dark: rgba(41,48,67,1);
   --label-blue: rgba(0,30,80,1);
   --border-light: rgba(208,209,213,1);
-  --border-input: rgba(110,116,126,1);
+  --border-input: rgba(161,164,172,1);
   --muted: rgba(96,101,116,1);
   --tooltip-bg: rgba(49,56,74,1);
+  --focus-orange: #C86C03;
   --font-text: 'VW Text','Inter',-apple-system,sans-serif;
   --font-head: 'VW Head','Inter',-apple-system,sans-serif;
 }
@@ -66,7 +67,15 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .section-container { display:flex; flex-direction:column; gap:24px; }
 @media (min-width:960px) {
   .section-container { display:grid; grid-template:"inputs right" / 4.2fr 2.45fr; column-gap:4.16vw; align-items:start; }
-  .input-section { grid-area:inputs; }
+  /* min-width:0 overrides the grid item's default min-width:auto, which let this
+     column's own content (the miles slider, at 453px) force it wider than its
+     4.2fr share — rendering 533px/227px instead of the intended 480px/280px
+     (verified against range-simulator, which has no min-width override and
+     renders the correct ratio only because its own content happens to fit).
+     Without this, the right column (holding the model/battery selects) was
+     narrower than every sibling app's, causing SC 1.4.12 text-spacing overflow
+     specifically in this app at 960-1024px. */
+  .input-section { grid-area:inputs; min-width:0; }
   .right-col { grid-area:right; position:sticky; top:76px; align-self:start; z-index:1; }
 }
 
@@ -83,9 +92,17 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 
 /* ── Combo ── */
 .combo { display:flex; flex-direction:column; gap:12px; }
-.question { display:flex; align-items:center; gap:0; }
+.question { }
+/* Not flex: a flex row keeps the icon pinned to the row's own vertical center
+   even once the label wraps to 2+ lines at narrow widths, leaving it floating
+   beside the whole paragraph block instead of trailing the last word (reported:
+   the info icon on "Select your charging location with charging costs." sat
+   off to the side, mid-block, at mobile widths). Normal inline flow lets the
+   button (already inline-flex + vertical-align:middle) wrap with the text like
+   any other inline content, so it always sits right after the final word. */
 .question-label { font-family:var(--font-text); font-size:16px; font-weight:700; line-height:1.2; color:var(--navy); }
 .q-icon-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; color:rgb(41,48,67); background:transparent; border:none; padding:0; cursor:pointer; flex-shrink:0; margin-left:4px; vertical-align:middle; -webkit-tap-highlight-color:transparent; }
+.q-icon-btn:focus-visible { outline:2px solid var(--focus-orange); border-radius:50%; }
 .q-icon { width:24px; height:24px; display:block; pointer-events:none; }
 
 /* ── Distribution control (matches range-simulator pattern) ── */
@@ -109,7 +126,7 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .slider-active-track { position:absolute; top:0; bottom:0; left:0; background:rgba(153,127,103,1); border-radius:4px; }
 input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); left:-18px; right:-18px; width:calc(100% + 36px); height:44px; opacity:0; cursor:pointer; z-index:2; margin:0; }
 .slider-thumb { position:absolute; top:50%; transform:translate(-50%,-50%); width:18px; height:18px; background:var(--navy-dark); border-radius:50%; pointer-events:none; z-index:1; box-shadow:0 1px 4px rgba(0,0,0,.25); }
-.slider-tooltip { display:inline-flex; align-items:center; position:absolute; bottom:calc(100% + 8px); background:var(--tooltip-bg); color:#fff; font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2; padding:8px 12px; border-radius:4px; white-space:nowrap; left:50%; transform:translateX(-50%); pointer-events:none; }
+.slider-tooltip { display:inline-flex; align-items:center; position:absolute; bottom:calc(100% + 8px); background:var(--tooltip-bg); color:#fff; font-family:var(--font-text); font-size:14px; font-weight:700; line-height:1.2; padding:4px 12px; border-radius:4px; white-space:nowrap; left:50%; transform:translateX(-50%); pointer-events:none; }
 .slider-tooltip.align-left { left:-9px; transform:none; }
 .slider-tooltip.align-right { left:auto; right:-9px; transform:none; }
 .slider-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--tooltip-bg); }
@@ -173,7 +190,7 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
   transform:translate(-50%,-50%);
   top:50%;
 }
-.step-dot.active  { background:rgba(153,127,103,1); }
+.step-dot.active  { background:rgba(41,48,67,1); }
 .step-dot.inactive { background:rgba(208,209,213,1); }
 .step-thumb-el {
   position:absolute;
@@ -194,8 +211,10 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
   display:flex;
   align-items:center;
   gap:6px;
-  padding-top:2px;
 }
+/* Was flex-end: bottom-aligned the edit icon against the 50px .fl-input
+   instead of centering it, unlike .step-mobile-right (its own mobile
+   equivalent), which already uses align-items:center. */
 
 /* Mobile: step row stacks */
 @media (max-width:959px) {
@@ -220,9 +239,9 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 }
 
 /* ── Floating label text input ── */
-.fl-input { position:relative; }
+.fl-input { position:relative; height:50px; }
 .fl-input input {
-  width:96px;
+  width:auto;
   height:50px;
   padding:20px 12px 0 16px;
   font-family:var(--font-text); font-size:16px; font-weight:400;
@@ -248,19 +267,10 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
    field — with no JS, and without adding a tab stop that would only move focus
    to the very next element. The input keeps its own aria-label, which takes
    precedence over this (imageless) label for the accessible name. */
-.edit-icon-btn { position:relative; display:flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-/* SC 2.5.8: 24x24 pointer target around the 16px glyph, laid out at 16px so the
-   row geometry is unchanged (same trick as .soc-thumb::before elsewhere). */
-.edit-icon-hit { position:absolute; left:50%; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); }
-/* The pencil carries alt="Edit" rather than alt="". Each .edit-icon-btn is a
-   <label for> used as a click-to-focus affordance, and with an empty alt it had no
-   text content at all — real WAVE reported 10 "Empty form label" ERRORS. The inputs
-   were never unnamed (each has its own aria-label, which takes precedence over label
-   text), so this was not a WCAG failure, but an empty <label for> is thin markup and
-   10 errors a BITV tester must dismiss by hand. SC 2.5.3 is unaffected: the visible
-   label here is an icon, not text. */
-.edit-icon { width:16px; height:16px; flex-shrink:0; display:block; opacity:.6; transition:opacity .15s; }
-.edit-icon-btn:hover .edit-icon { opacity:1; }
+.edit-icon-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; flex-shrink:0; cursor:pointer; -webkit-tap-highlight-color:transparent; border:none; background:transparent; padding:0; outline:none; touch-action:manipulation; }
+.edit-icon-btn:focus-visible { outline:2px solid var(--focus-orange); border-radius:50%; outline-offset:0; }
+.edit-icon-hit { display:none; }
+.edit-icon { width:12px; height:12px; flex-shrink:0; display:block; }
 
 /* ── Charging locations wrapper ── */
 .charge-locs { display:flex; flex-direction:column; gap:20px; }
@@ -273,10 +283,31 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .reset-stroke { height:1px; background:var(--navy-dark); }
 
 /* ── Fuel row ── */
-.fuel-row { display:flex; align-items:center; gap:20px; }
+.fuel-row { display:flex; align-items:center; gap:32px; }
 .fuel-item { display:flex; align-items:center; gap:8px; }
-.fuel-item-label { position:absolute; top:6px; left:16px; font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:rgba(0,30,80,1); pointer-events:none; white-space:nowrap; }
-@media (max-width:439px) { .fuel-row { flex-direction:column; align-items:flex-start; gap:12px; } }
+.fuel-item-label { font-family:var(--font-text); font-size:12px; line-height:18px; font-weight:400; color:rgba(0,30,80,1); white-space:nowrap; }
+.fuel-input-row { display:flex; align-items:center; gap:8px; }
+.fuel-input-row .fuel-unit + .edit-icon-btn { margin-left:-8px; }
+.fuel-unit { font-family:var(--font-text); font-size:14px; font-weight:400; color:rgba(0,30,80,1); white-space:nowrap; }
+.fuel-item .fl-input input { padding:0 12px 0 16px; width:105px; }
+/* Petrol and Diesel stay side by side (not stacked) — only each one's own
+   label moves above its input instead of beside it, which frees enough width
+   per block (each only needs to fit its compact 105px input + unit + edit
+   icon, not the label text too) that both blocks fit without the "Diesel:"
+   cutoff that side-by-side + label-beside-input caused at 450px. The 32px
+   .fuel-row gap (fine on desktop, where there's room to spare) still left
+   Diesel's edit icon 11px past the edge at 390px, so it's tightened here too. */
+@media (max-width:559px) {
+  .fuel-row { gap:6px; }
+  .fuel-item { flex-direction:column; align-items:flex-start; gap:4px; }
+  .fuel-input-row { gap:4px; }
+}
+/* Below 375px even the tightened side-by-side pair doesn't fit (measured
+   Diesel's edit icon 55px past the edge at 320px, the zoom-400 width) — fall
+   back to stacking the two blocks only at this narrowest range. */
+@media (max-width:374px) {
+  .fuel-row { flex-direction:column; align-items:flex-start; }
+}
 
 /* ── Floating label select ── */
 .fl-select { position:relative; }
@@ -287,7 +318,13 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .fl-select:hover select { border-color:rgba(153,127,103,1); }
 .fl-select .fl-label { position:absolute; top:6px; left:16px; font-family:var(--font-text); font-size:12px; line-height:1.5; font-weight:400; color:var(--label-blue); pointer-events:none;  overflow:hidden; right:52px; white-space:nowrap; text-overflow:ellipsis;}
 .fl-chevron { position:absolute; right:8px; top:50%; transform:translateY(-50%); pointer-events:none; width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
-.select-group { display:flex; gap:12px; }
+.select-group { display:flex; gap:12px; flex-direction:column; }
+/* Unconditional, not viewport-gated: this page's own two-column grid (>=960px)
+   makes available width non-monotonic (227px at 960px is worse than 267px at
+   320px), so no breakpoint holds. Stacking gives each select the full row
+   width at every size, which comfortably fits "Model: The new ID.3 Neo" /
+   "Motor / Battery Capacity" even under SC 1.4.12 stress, with zero change to
+   .fl-select's own height and zero font-size reduction. */
 .select-group .fl-select { flex:1; min-width:0; }
 
 /* ── Model section ── */
@@ -304,11 +341,12 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
   display:flex; flex-direction:column; gap:16px;
 }
 @media (max-width:767px) { .result-card { padding:20px; } }
-.result-headline { display:flex; align-items:flex-start; gap:8px; }
-.result-headline-text { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.3; flex:1; }
+.result-headline { display:flex; align-items:center; }
+.result-headline-text { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.3; }
 .result-headline-info { width:20px; height:20px; flex-shrink:0; margin-top:1px; }
+.result-headline .q-icon-btn { color: #fff; }
 .result-ev-block { display:flex; flex-direction:column; gap:2px; }
-.result-ev-label { font-family:var(--font-text); font-size:12px; font-weight:400; color:rgba(255,255,255,.7); line-height:1.5; }
+.result-ev-label { font-family:var(--font-text); font-size:12px; font-weight:700; color:#fff; line-height:1.5; }
 .result-ev-value { font-family:var(--font-head); font-size:56px; font-weight:700; color:#fff; line-height:1; display:flex; align-items:baseline; gap:0; }
 @media (max-width:767px) { .result-ev-value { font-size:44px; } }
 @media (max-width:439px) { .result-ev-value { font-size:38px; } }
@@ -318,7 +356,7 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .slot-reel span { display:block; height:1em; line-height:1; text-align:center; }
 .result-row { display:flex; align-items:flex-start; gap:12px; }
 .result-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.result-col-label { font-family:var(--font-text); font-size:12px; color:rgba(255,255,255,.7); line-height:1.5; }
+.result-col-label { font-family:var(--font-text); font-size:12px; font-weight:700; color:#fff; line-height:1.5; }
 .result-col-val-lg { font-family:var(--font-head); font-size:28px; font-weight:700; color:#fff; line-height:1.2; }
 @media (max-width:439px) { .result-col-val-lg { font-size:22px; } }
 .result-col-val-sm { font-family:var(--font-head); font-size:18px; font-weight:700; color:#fff; line-height:1.2; }
@@ -347,17 +385,40 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .sticky-result { display:none; }
 @media (max-width:959px) {
   .sticky-result {
-    display:block; position:fixed; bottom:0; left:0; right:0;
-    background:var(--navy); padding:24px 8.33vw;
-    z-index:100;
+    display:block; position:fixed; bottom:0px; left:0px; width:100%;
+    background:var(--navy); padding:16px 32px;
+    z-index:10;
     transform:translateY(100%);
-    transition:transform .3s cubic-bezier(.22,1,.36,1);
+    transition:transform .2s;
     pointer-events:none;
   }
-  .sticky-result.visible { transform:translateY(0); pointer-events:auto; }
-  .sticky-ev-value { font-family:var(--font-head); font-size:32px; font-weight:700; color:#fff; line-height:1; display:flex; align-items:baseline; gap:0; }
-  .sticky-label { font-family:var(--font-text); font-size:12px; color:rgba(255,255,255,.7); line-height:1.5; }
+  .sticky-result.visible { transform:translateY(0%); pointer-events:auto; }
+  /* Shared result-header/result-headline-row/result-headline-label/result-value
+     structure (same class names/nesting as range-simulator's sticky bar), scoped to
+     .sticky-result because cost's own inline result card keeps its separate
+     result-headline/result-headline-text classes untouched. */
+  .sticky-result .result-header { display:flex; flex-direction:column; gap:4px; }
+  .sticky-result .result-headline-row { display:flex; align-items:center; }
+  .sticky-result .result-headline-label { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.2; }
+  .sticky-result .result-value {
+    color: rgb(255, 255, 255);
+    margin: unset;
+    font-family: var(--font-head);
+    font-weight: bold;
+    font-size: clamp(2.5rem, 2.19rem + 0.88vw, 3.25rem);
+    line-height: 120%;
+    letter-spacing: calc(-0.02em + 0.02rem);
+    display:flex; align-items:baseline; gap:0; flex-wrap:wrap;
+  }
 }
+/* The clamp() floors at 40px below ~564px viewport width. At the 320x256 @4x
+   zoom-400 viewport this app's sticky bar and #topbar leave only a thin
+   scroll-safe band between them (CENTRE_FN in structural.spec.js), and 40px is
+   tall enough to push #step-thumb-work-m's ray-cast hit region under 24px
+   (measured 22.3px at 34px; 40px is worse). Capped back down at this one
+   breakpoint only — verified clear at 32px. Must stay AFTER the base rule
+   above (same selector) to win the cascade. */
+@media (max-width:374px) { .sticky-result .result-value { font-size: 32px; } }
 
 /* ── Disclaimer ── */
 .disclaimer { display:flex; gap:16px; margin-top:40px; }
@@ -369,11 +430,11 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
    .step-thumb-el and .fl-select select all set outline:none with no replacement,
    and #miles-slider is opacity:0 so its UA ring is invisible with it. */
 .dist-thumb:focus-visible, .step-thumb-el:focus-visible {
-  outline:2px solid #1B2236; outline-offset:3px;
+  outline:2px solid var(--focus-orange); outline-offset:0;
 }
-.fl-select select:focus-visible { outline:2px solid #1B2236; outline-offset:2px; }
+.fl-select select:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; }
 input[type="range"]:focus-visible ~ .slider-thumb {
-  outline:2px solid #1B2236; outline-offset:3px; border-radius:50%;
+  outline:2px solid var(--focus-orange); outline-offset:0; border-radius:50%;
 }
 /* SC 2.5.8: .step-thumb-el is 18x18 = 324px^2 against 576 required, and its
    alternative target (.step-track-wrap) is only 18px tall, so neither the
@@ -385,8 +446,14 @@ input[type="range"]:focus-visible ~ .slider-thumb {
 }
 /* SC 2.5.7: the distribution block is now a single-pointer target. */
 #dist-block { cursor:pointer; }
-/* SC 2.4.11: the 116px fixed bar covered 18 of 20 tab stops at 320x256. */
-html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
+html { scroll-padding-top:72px; }
+/* SC 2.4.11: below 960px .sticky-result is a fixed bottom bar (measured 93-105px
+   tall depending on the viewport's font clamp) that covers whatever sits at the
+   very bottom of the viewport once Tab scrolls it there. scroll-padding-top alone
+   left no equivalent reserve at the bottom, so focus could land fully underneath
+   it (price-work-m, its Edit button, step-thumb-work-m, price-public-m,
+   price-diesel all measured fully covered). */
+@media (max-width:959px) { html { scroll-padding-bottom:120px; } }
 .sr-only {
   position:absolute; width:1px; height:1px; margin:-1px; padding:0;
   overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%);
@@ -414,6 +481,7 @@ html { scroll-padding-top:72px; scroll-padding-bottom:140px; }
   transition:top 0.15s;
 }
 .skip-link:focus { top:0; }
+.skip-link:focus-visible { outline:2px solid var(--focus-orange); }
 
 /* SC 2.1.1 / 4.1.2: .reset-link was a <div onclick> — tabIndex -1, no role, no
    name, invisible to the AX tree as a widget, and Enter/Space did nothing. It is a
@@ -425,18 +493,81 @@ button.reset-link {
 }
 button.reset-link .reset-link-text { display:flex; flex-direction:column; gap:1px; }
 button.reset-link .reset-stroke { display:block; height:1px; background:var(--navy-dark); }
-button.reset-link:focus-visible { outline:2px solid #1B2236; outline-offset:2px; }
+button.reset-link:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; }
 /* SC 2.4.7. Without this the six number inputs indicate focus only by shifting their
    border from #6E747E to #997F67 - a change of just 1.25:1 between the two states,
    against the 2px navy outline every other control in this app uses. Visible, so it
    passed, but it was the weakest indicator on the page and the only inconsistent one. */
-.pi-input:focus-visible, input[type="number"]:focus-visible { outline:2px solid #1B2236; outline-offset:2px; }
+.pi-input:focus-visible, input[type="number"]:focus-visible { outline:2px solid var(--focus-orange); outline-offset:0; }
 /* SC 3.3.1 / 3.3.3: an out-of-range price is reported in text, not silently computed. */
 .field-error {
   display:block; margin-top:4px; font-family:var(--font-text,sans-serif);
   font-size:12px; line-height:1.4; color:#8A1B1B;
 }
 input[aria-invalid="true"] { border-color:#8A1B1B !important; }
+
+/* ════════════════════════════
+   INFO MODAL — shared by every "More information" button
+   Ported from range-simulator's #info-overlay/#info-modal (single reusable dialog,
+   title/body swapped per trigger by button id, via MODAL_CONTENT in JS).
+════════════════════════════ */
+#info-overlay { position:fixed; inset:0; z-index:200; }
+#info-overlay[hidden] { display:none; }
+#info-backdrop { position:absolute; inset:0; background:rgba(27,34,54,0.6); }
+#info-modal {
+  position:absolute; top:50%; left:50%;
+  overflow-y:auto; max-height:calc(100% - 24px);
+  width:91.66vw;
+  background-color:#fff;
+  border-radius:20px;
+  opacity:0;
+  transform:translate(-50%,-50%) translateY(12px);
+  transition:opacity 300ms, transform 300ms;
+  padding-bottom:24px;
+  outline:none;
+  z-index:1;
+}
+#info-overlay.is-open #info-modal {
+  opacity:1;
+  transform:translate(-50%,-50%) translateY(0px);
+}
+@media (min-width:960px) {
+  #info-modal { width:58.33vw; }
+}
+.info-modal-header {
+  display:flex; position:sticky; z-index:1; top:0;
+  align-items:center; justify-content:space-between;
+  padding-block:24px; padding-inline:min(4.16vw,106.66px);
+  background-color:#fff;
+}
+.info-modal-title {
+  font-family:var(--font-head); font-weight:700; font-size:20px;
+  line-height:1.2; color:var(--navy);
+}
+.info-modal-close {
+  position:absolute; top:24px; right:min(4.16vw,106.66px); z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border:none; background:transparent;
+  cursor:pointer; color:var(--navy); border-radius:50%; padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.info-modal-close:focus-visible { outline:2px solid var(--focus-orange); }
+.info-modal-body:focus-visible { outline:2px solid var(--focus-orange); border-radius:4px; }
+.info-modal-body {
+  font-family:var(--font-text); font-weight:400; font-size:16px; line-height:1.5;
+  color:var(--navy); background-color:#fff;
+  padding:0 min(4.16vw,106.66px);
+}
+.info-modal-body p { margin:0 0 16px; }
+.info-modal-body p:last-child { margin-bottom:0; }
+.info-modal-body ul { margin:0 0 16px; padding-left:20px; }
+.info-modal-body ul:last-child { margin-bottom:0; }
+.info-modal-body li { margin-bottom:8px; }
+.info-modal-body li:last-child { margin-bottom:0; }
+/* SC 2.3.3 — honour a reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  #info-modal { transition-duration:0.001ms !important; }
+}
 </style>
 </head>
 <body>
@@ -509,7 +640,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
       <div class="combo">
         <div class="question">
           <span class="question-label">Where do you travel and how often?</span>
-          <button class="q-icon-btn" aria-label="More information: Where do you travel and how often"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+          <button class="q-icon-btn" id="info-btn-distance" aria-label="More information: Where do you travel and how often"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
         </div>
         <div class="dist-wrap">
           <div class="dist-block" id="dist-block">
@@ -538,14 +669,14 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
       <!-- Q2: Annual mileage -->
       <div class="combo">
         <div class="question">
-          <span class="question-label">How many miles do you drive a year?</span>
-          <button class="q-icon-btn" aria-label="More information: How many miles do you drive a year"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+          <span class="question-label" id="q-miles">How many miles do you drive a year?</span>
+          <button class="q-icon-btn" id="info-btn-miles" aria-label="More information: How many miles do you drive a year"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
         </div>
         <div class="slider-wrap">
           <div class="slider-track-area">
             <div class="slider-active-track" id="miles-active"></div>
             <input type="range" id="miles-slider" min="1000" max="30000" step="500" value="10000"
-                   aria-label="How many miles do you drive per year?" aria-valuetext="10000 miles" oninput="updateMiles()">
+                   aria-labelledby="q-miles" aria-valuetext="10000 miles" oninput="updateMiles()">
             <div class="slider-thumb" id="miles-thumb">
               <div class="slider-tooltip" id="miles-tip">10,000 mi</div>
             </div>
@@ -560,7 +691,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
       <div class="combo">
         <div class="question">
           <span class="question-label">Select your charging location with charging costs.</span>
-          <button class="q-icon-btn" aria-label="More information: Select your charging location with charging costs"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+          <button class="q-icon-btn" id="info-btn-location" aria-label="More information: Select your charging location with charging costs"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
         </div>
         <div class="charge-locs">
 
@@ -576,7 +707,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-home-m" aria-label="Home charging price in pounds per kWh" value="0.24" step="0.01" min="0" max="9.99" oninput="syncInput('home','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-home-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit home charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-home-m').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <!-- Desktop: label+slider left, input right -->
@@ -599,7 +730,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-home-d" aria-label="Home charging price in pounds per kWh" value="0.24" step="0.01" min="0" max="9.99" oninput="syncInput('home','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-home-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit home charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-home-d').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <!-- Mobile: slider below -->
@@ -626,7 +757,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-work-m" aria-label="Work charging price in pounds per kWh" value="0.32" step="0.01" min="0" max="9.99" oninput="syncInput('work','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-work-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit work charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-work-m').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <div class="step-row">
@@ -648,7 +779,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-work-d" aria-label="Work charging price in pounds per kWh" value="0.32" step="0.01" min="0" max="9.99" oninput="syncInput('work','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-work-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit work charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-work-d').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <div class="step-mobile-row" style="margin-top:10px;">
@@ -674,7 +805,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-public-m" aria-label="Public charging price in pounds per kWh" value="0.52" step="0.01" min="0" max="9.99" oninput="syncInput('public','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-public-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit public charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-public-m').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <div class="step-row">
@@ -696,7 +827,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-public-d" aria-label="Public charging price in pounds per kWh" value="0.52" step="0.01" min="0" max="9.99" oninput="syncInput('public','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-public-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit public charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-public-d').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <div class="step-mobile-row" style="margin-top:10px;">
@@ -722,7 +853,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-motorway-m" aria-label="Motorway charging price in pounds per kWh" value="0.75" step="0.01" min="0" max="9.99" oninput="syncInput('motorway','m')">
                 </div>
-                <label class="edit-icon-btn" for="price-motorway-m"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit motorway charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-motorway-m').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <div class="step-row">
@@ -744,7 +875,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                   <span class="fl-label">£ / kWh</span>
                   <input type="number" id="price-motorway-d" aria-label="Motorway charging price in pounds per kWh" value="0.75" step="0.01" min="0" max="9.99" oninput="syncInput('motorway','d')">
                 </div>
-                <label class="edit-icon-btn" for="price-motorway-d"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
+                <button type="button" class="edit-icon-btn" aria-label="Edit motorway charging price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-motorway-d').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
               </div>
             </div>
             <div class="step-mobile-row" style="margin-top:10px;">
@@ -775,22 +906,28 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
       <div class="combo">
         <div class="question">
           <span class="question-label">Petrol and diesel prices for comparison</span>
-          <button class="q-icon-btn" aria-label="More information: Petrol and diesel prices for comparison"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
+          <button class="q-icon-btn" id="info-btn-fuel" aria-label="More information: Petrol and diesel prices for comparison"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
         </div>
         <div class="fuel-row">
           <div class="fuel-item">
-            <div class="fl-input">
-              <span class="fuel-item-label">Petrol:</span>
-              <input type="number" id="price-petrol" aria-label="Petrol price in pounds per litre" value="1.55" step="0.01" min="0" max="9.99" oninput="updateCost()">
+            <span class="fuel-item-label">Petrol:</span>
+            <div class="fuel-input-row">
+              <div class="fl-input">
+                <input type="number" id="price-petrol" aria-label="Petrol price in pounds per litre" value="1.55" step="0.01" min="0" max="9.99" oninput="updateCost()">
+              </div>
+              <span class="fuel-unit" aria-hidden="true">£ / l</span>
+              <button type="button" class="edit-icon-btn" aria-label="Edit petrol price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-petrol').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
             </div>
-            <label class="edit-icon-btn" for="price-petrol"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
           </div>
           <div class="fuel-item">
-            <div class="fl-input">
-              <span class="fuel-item-label">Diesel:</span>
-              <input type="number" id="price-diesel" aria-label="Diesel price in pounds per litre" value="1.60" step="0.01" min="0" max="9.99" oninput="updateCost()">
+            <span class="fuel-item-label">Diesel:</span>
+            <div class="fuel-input-row">
+              <div class="fl-input">
+                <input type="number" id="price-diesel" aria-label="Diesel price in pounds per litre" value="1.60" step="0.01" min="0" max="9.99" oninput="updateCost()">
+              </div>
+              <span class="fuel-unit" aria-hidden="true">£ / l</span>
+              <button type="button" class="edit-icon-btn" aria-label="Edit diesel price" onmousedown="event.preventDefault()" onclick="document.getElementById('price-diesel').focus({preventScroll:true})"><img class="edit-icon" src="assets/icons/icon-edit.svg" alt=""></button>
             </div>
-            <label class="edit-icon-btn" for="price-diesel"><span class="edit-icon-hit"></span><img class="edit-icon" src="assets/icons/icon-edit.svg" alt="Edit"></label>
           </div>
         </div>
       </div>
@@ -805,17 +942,16 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
         <div class="model-section">
           <div class="combo">
             <div class="question">
-              <span class="question-label">Which model are you interested in?</span>
+              <span class="question-label" id="q-model">Which model are you interested in?</span>
             </div>
             <div class="select-group">
               <div class="fl-select">
-                <span class="fl-label" id="trim-fl-label">The new ID.3 Neo</span>
-                <!-- SC 2.5.3 Label in Name: was aria-label="Which model are you interested in?",
-                     which does not contain the visible label "The new ID.3 Neo", so a
-                     speech-recognition user reading the label could not address the
-                     control. id="trim-fl-label" already existed and was referenced by
-                     nothing. Matches range-simulator:965 and charging-time:525. -->
-                <select id="trim-select" aria-labelledby="trim-fl-label">
+                <span class="fl-label"><span id="trim-model-static">Model: </span><span id="trim-fl-label">The new ID.3 Neo</span></span>
+                <!-- SC 2.5.3 Label in Name: aria-labelledby points at BOTH the question
+                     above and this floating label, so the name contains whichever one a
+                     sighted user perceives as "the" visible label. Matches
+                     range-simulator and charging-time-simulator. -->
+                <select id="trim-select" aria-labelledby="q-model trim-model-static trim-fl-label">
                   <optgroup label="The new ID.3 Neo">
                     <option value="Trend">Trend</option>
                     <option value="Life">Life</option>
@@ -836,7 +972,9 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                      "Motor / Battery Capacity"; the "/" had become the word "and", so the
                      visible text was not contained in the name. -->
                 <select id="battery-select" aria-labelledby="battery-fl-label">
-                  <option value="50">125 kW (170 PS) · 50 kWh</option>
+                  <optgroup label="Motor / Battery Capacity">
+                    <option value="50">125 kW (170 PS) · 50 kWh</option>
+                  </optgroup>
                 </select>
                 <span class="fl-chevron"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg></span>
               </div>
@@ -852,6 +990,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
         <div class="result-card">
           <div class="result-headline">
             <span class="result-headline-text">Estimated costs and CO₂ emissions</span>
+            <button class="q-icon-btn" id="info-btn-cost" aria-label="More information: How your estimated cost is calculated"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
           </div>
           <!-- EV electricity cost -->
           <div class="result-ev-block">
@@ -905,10 +1044,13 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
   </div><!-- /section-container -->
 
   <!-- Sticky bar (mobile) -->
-  <div class="sticky-result" id="sticky-result">
-    <div class="sticky-label" id="sticky-model-name">The new ID.3 Neo Trend</div>
-    <div class="sticky-ev-value" id="sticky-ev-cost" aria-hidden="true">£–</div>
-    <div class="sticky-label">per year</div>
+  <div class="sticky-result" id="sticky-result" aria-hidden="true">
+    <div class="result-header">
+      <div class="result-headline-row">
+        <span class="result-headline-label">Estimated cost</span>
+      </div>
+      <div class="result-value" id="sticky-cost-display" aria-hidden="true">£–</div>
+    </div>
   </div>
 
   <div class="disclaimer">
@@ -918,6 +1060,26 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
 
 </div><!-- /simulator -->
 </div><!-- /content -->
+
+<!-- ════ INFO MODAL (shared across all "More information" buttons) ════ -->
+<div id="info-overlay" hidden>
+  <div id="info-backdrop" aria-hidden="true"></div>
+  <div id="info-modal" role="dialog" aria-modal="true"
+       aria-labelledby="info-modal-title" tabindex="-1">
+    <div class="info-modal-header" role="presentation">
+      <h2 id="info-modal-title" class="info-modal-title"></h2>
+    </div>
+    <div class="info-modal-body" id="info-modal-body" tabindex="0"></div>
+    <button type="button" id="info-modal-close" class="info-modal-close"
+            aria-label="Close">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+           focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 5L5 19M5 5l14 14" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
 
 <script>
 // ── Vehicle data ──
@@ -1271,11 +1433,10 @@ function onTrimChange() {
   if (groupEl) groupEl.textContent = trimGroupLabels[trim] || 'The new ID.3 Neo';
   const opts = batteryOptions[trim] || batteryOptions.Trend;
   const sel  = document.getElementById('battery-select');
-  sel.innerHTML = opts.map(o => `<option value="${o.v}">${o.l}</option>`).join('');
+  sel.innerHTML = '<optgroup label="Motor / Battery Capacity">'
+    + opts.map(o => `<option value="${o.v}">${o.l}</option>`).join('') + '</optgroup>';
   const img = document.getElementById('car-img');
   if (img && carImages[trim]) img.src = carImages[trim];
-  const stickyName = document.getElementById('sticky-model-name');
-  if (stickyName) stickyName.textContent = trimNames[trim] || trim;
   updateCost();
 }
 
@@ -1370,7 +1531,7 @@ function updateCost() {
   document.getElementById('result-diesel-cost').textContent = fmt(annualDieselCost);
   document.getElementById('result-diesel-co2').textContent  = dieselCO2.toFixed(2) + ' t CO₂';
 
-  const sc = document.getElementById('sticky-ev-cost');
+  const sc = document.getElementById('sticky-cost-display');
   if (sc) buildCostSlots(sc, Math.round(annualEvCost));
   // SC 1.3.1 / 4.1.3: the reels are aria-hidden because their textContent is every
   // digit of every column (42 chars for "£2,119"). This is the only accessible form
@@ -1460,6 +1621,153 @@ window.addEventListener('DOMContentLoaded', () => {
 (function bindSelectHandlers(){
   document.getElementById('trim-select').addEventListener('change', function () { onTrimChange(); });
   document.getElementById('battery-select').addEventListener('change', function () { updateCost(); });
+})();
+
+/* ── Info modal — one reusable dialog behind every "More information" button.
+   Ported from range-simulator's initInfoModal(): focus lands on the body
+   container (not the close button), since a screen reader announces the
+   dialog's accessible name (the h2) on open but not the body text — landing
+   on the close button would leave the explanation unread. `inert` on the
+   background makes the 2-stop focus trap robust: without it a trip out to
+   browser chrome and back could land focus on a background control.
+
+   NOTE: the copy in MODAL_CONTENT below is a first draft written to unblock
+   this feature, not approved final content — it needs the user's review. */
+(function initInfoModal(){
+  var overlay = document.getElementById('info-overlay');
+  var modal = document.getElementById('info-modal');
+  var title = document.getElementById('info-modal-title');
+  var body = document.getElementById('info-modal-body');
+  var closeBtn = document.getElementById('info-modal-close');
+  var backdrop = document.getElementById('info-backdrop');
+
+  // Each button's copy, keyed by its id. A block is either a paragraph string
+  // or { list: [...] } for a bulleted list (SC 1.3.1 — real <ul>/<li>, not
+  // visual bullet characters in a plain paragraph).
+  var MODAL_CONTENT = {
+    'info-btn-distance': {
+      title: 'Driving profile impact on cost',
+      body: [
+        'Set the mix of city, country road and motorway driving that matches how you use your car. Different road types use energy at different rates, which affects how much electricity your car needs over the year and, in turn, your estimated running cost.'
+      ]
+    },
+    'info-btn-miles': {
+      title: 'Annual mileage impact on cost',
+      body: [
+        'Enter the number of miles you expect to drive in a year. Annual mileage is combined with your chosen model’s energy consumption to estimate your total electricity use, how often you’ll need to charge, and your overall running cost.'
+      ]
+    },
+    'info-btn-location': {
+      title: 'Charging location cost impact',
+      body: [
+        'Electricity prices vary depending on where you charge. Home charging is typically the cheapest option, while public and motorway rapid charging usually cost more per kWh.',
+        'Set how often you charge at each location and the price you pay there, and the tool calculates a weighted average electricity cost based on your overall charging mix.'
+      ]
+    },
+    'info-btn-fuel': {
+      title: 'Petrol and diesel comparison prices',
+      body: [
+        'These prices are used to estimate what your annual mileage would cost to drive in a petrol or diesel car, so you can compare it against the electric running cost shown alongside it.',
+        'Update the price per litre to match current fuel prices for a more accurate comparison.'
+      ]
+    },
+    'info-btn-cost': {
+      title: 'How your estimated cost is calculated',
+      body: [
+        'Your estimated annual electricity cost is calculated by multiplying the price of electricity per charge by the number of charges needed in a year, based on the car\'s WLTP range and energy consumption together with your selected annual mileage and driving profile.',
+        'Figures assume charging from 0-100% each time and are for the standard UK specification vehicle. Petrol and diesel comparison figures use the fuel prices and consumption values shown alongside your result. Actual costs will vary with real-world driving and local energy prices.'
+      ]
+    }
+  };
+
+  var triggers = Object.keys(MODAL_CONTENT)
+    .map(function (id) { return document.getElementById(id); })
+    .filter(Boolean);
+  if (!overlay || !triggers.length) return;
+
+  var bgRegions = [document.getElementById('topbar'), document.getElementById('sim-main')];
+  function setBackgroundInert(on) {
+    bgRegions.forEach(function (el) {
+      if (!el) return;
+      if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+    });
+  }
+
+  var lastTrigger = null, modalIsOpen = false;
+
+  function renderBody(blocks) {
+    body.textContent = '';
+    (blocks || []).forEach(function (block) {
+      if (block && block.list) {
+        var ul = document.createElement('ul');
+        block.list.forEach(function (item) {
+          var li = document.createElement('li');
+          li.textContent = item;
+          ul.appendChild(li);
+        });
+        body.appendChild(ul);
+      } else {
+        var p = document.createElement('p');
+        p.textContent = block;
+        body.appendChild(p);
+      }
+    });
+  }
+
+  var focusAnchor = null;
+
+  function openInfoModal(trigger) {
+    lastTrigger = trigger;
+    var content = MODAL_CONTENT[trigger.id] || { title: '', body: [] };
+    title.textContent = content.title;
+    renderBody(content.body);
+
+    // Every modal reads as one combined chunk: focus the whole container, whose
+    // computed name folds all its text together. The list markup itself is
+    // untouched in the DOM (SC 1.3.1 still holds), it just isn't split into
+    // separate stops on the initial read.
+    focusAnchor = body;
+
+    overlay.hidden = false;
+    setBackgroundInert(true);
+    requestAnimationFrame(function () { overlay.classList.add('is-open'); });
+    focusAnchor.focus();
+    modalIsOpen = true;
+  }
+
+  function closeInfoModal() {
+    overlay.classList.remove('is-open');
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      overlay.hidden = true;
+      setBackgroundInert(false); // must clear inert before focusing, or the focus call is ignored
+      if (lastTrigger) lastTrigger.focus();
+      modalIsOpen = false;
+    }
+    modal.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, 350); // fallback if transition fires before listener attaches
+  }
+
+  triggers.forEach(function (btn) {
+    btn.addEventListener('click', function () { openInfoModal(btn); });
+  });
+  closeBtn.addEventListener('click', closeInfoModal);
+  backdrop.addEventListener('click', closeInfoModal);
+
+  modal.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || !focusAnchor) return;
+    e.preventDefault();
+    if (document.activeElement === closeBtn && !e.shiftKey) { focusAnchor.focus(); }
+    else if (document.activeElement === focusAnchor && e.shiftKey) { closeBtn.focus(); }
+    else if (e.shiftKey) { focusAnchor.focus(); }
+    else { closeBtn.focus(); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modalIsOpen) closeInfoModal();
+  });
 })();
 </script>
 </body>

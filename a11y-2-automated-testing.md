@@ -117,6 +117,13 @@ large-text threshold never applies).
 `letter-spacing:0.12em`, `word-spacing:0.16em`, `p margin-bottom:2em`) at 1440 / 390 / 320:
 **no newly clipped element, no control lost, no horizontal scroll.**
 
+> **One nuance the detector accounts for.** The trim-select and battery-select floating labels
+> ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") do still visually truncate at some
+> widths under these overrides. That is not counted as loss: each select's `<option>`s are wrapped
+> in an `<optgroup>` whose `label` matches the truncated string exactly, so opening the select —
+> its own normal operation — reveals the same text in full. A label whose content has no such
+> match inside its own control (there is none here) would still fail this check.
+
 > **Detector validated.** A canary that fits at the default line-height and overflows only at 1.5
 > was injected and *was* detected. A first canary was already clipped before the override and
 > therefore proved nothing — "no new clipping" is worthless unless you have watched the detector fire.

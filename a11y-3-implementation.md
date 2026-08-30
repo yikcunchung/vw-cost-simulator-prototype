@@ -23,7 +23,7 @@ Chrome maps a bare `<svg>` to `role=image`, `name=""`, `ignored=false` — it is
 default. `svg-img-alt` and `role-img-alt` are both **inapplicable** to an `<svg>` with no `role`
 attribute, and `image-alt` only inspects `<img>`, so the whole class is invisible to scanners.
 
-Fixed with `aria-hidden="true"`. **A1 is the rule; the accessibility-tree assertion in the
+Fixed with `aria-hidden="true"`. **SC 1.1.1 is the rule; the accessibility-tree assertion in the
 Definition of Done is the check that keeps it fixed.** The pattern was already understood in this
 codebase — every `.q-icon` SVG carried `aria-hidden="true"` already. These 9 were simply missed.
 
@@ -35,9 +35,9 @@ price". **A name being present and unique does not make it correct.**
 ---
 # 1. Semantics and naming
 
-### A1 — Every inline `<svg>` is either named or hidden
+### SC 1.1.1 — Every inline `<svg>` is either named or hidden
 
-`SC 1.1.1` · **Level A**
+**Level A**
 
 Chrome maps a bare `<svg>` to `role=image`, `name=""`, `ignored=false`. It is therefore **exposed to
 assistive technology as an unnamed graphic** — it is not "decorative by default".
@@ -68,9 +68,9 @@ export const Icon = ({ label, ...p }) =>
 
 ---
 
-### A2 — An icon-only control needs a real name, not a hidden one
+### SC 4.1.2, 2.4.4 — An icon-only control needs a real name, not a hidden one
 
-`SC 4.1.2, 2.4.4` · **Level A**
+**Level A**
 
 If a control's only content is an icon, the control carries `aria-label`; the icon inside it is
 `aria-hidden`. Never name the icon and leave the button unnamed — the name must sit on the thing
@@ -78,21 +78,21 @@ that is focusable.
 
 ---
 
-### A3 — A `<select>` is named by its visible label
+### SC 1.3.1, 4.1.2 — A `<select>` is named by its visible label
 
-`SC 1.3.1, 4.1.2` · **Level A**
+**Level A**
 
 Use `aria-labelledby` pointing at the visible label element. Do not retype the label into an
-`aria-label` — that is how the visible text and the name drift apart (see A4).
+`aria-label` — that is how the visible text and the name drift apart (see SC 2.5.3 above).
 
 **Trap:** a `<select>`'s `<option>` text is **not** its label. An audit that compares concatenated
 option text against the accessible name will manufacture failures that do not exist.
 
 ---
 
-### A4 — The visible label sits inside the accessible name
+### SC 2.5.3 — The visible label sits inside the accessible name
 
-`SC 2.5.3` · **Level A**
+**Level A**
 
 If a control has a visible text label, the accessible name must **contain that text, contiguously**
 — otherwise a speech-input user cannot activate it by saying what they see.
@@ -108,18 +108,18 @@ If a control has a visible text label, the accessible name must **contain that t
 
 ---
 
-### A5 — One `h1`, no skipped levels, real landmarks
+### SC 1.3.1, 2.4.1, 2.4.6 — One `h1`, no skipped levels, real landmarks
 
-`SC 1.3.1, 2.4.1, 2.4.6` · **Level A / AA**
+**Level A / AA**
 
 One `h1`; heading levels descend without gaps; `role="banner"` on the topbar and a `<main>`; and a
 skip link as the **first** tab stop, pointing at an id that exists.
 
 ---
 
-### A6 — A visually hidden polite live region, updated on every path
+### SC 4.1.3 — A visually hidden polite live region, updated on every path
 
-`SC 4.1.3` · **Level AA**
+**Level AA**
 
 ```html
 <p id="cost-live" class="sr-only" aria-live="polite"></p>
@@ -134,9 +134,9 @@ not announced. Write to it from **every** path that changes the result, not just
 
 ---
 
-### A7 — `lang` on the document, and on any passage that differs
+### SC 3.1.1, 3.1.2 — `lang` on the document, and on any passage that differs
 
-`SC 3.1.1, 3.1.2` · **Level A / AA**
+**Level A / AA**
 
 `<html lang="en">`. If a CMS field can hold a string in another language, the component rendering it
 must be able to emit `lang` alongside it.
@@ -144,18 +144,18 @@ must be able to emit `lang` alongside it.
 ---
 # 2. Keyboard and focus
 
-### B1 — Everything the mouse can do, the keyboard can do
+### SC 2.1.1 — Everything the mouse can do, the keyboard can do
 
-`SC 2.1.1` · **Level A**
+**Level A**
 
 Every custom control — anything that is not a native `<button>`, `<a>`, `<select>` or `<input>` —
 needs an explicit key handler. Assert the **state change**, not just that the handler fired.
 
 ---
 
-### B2 — A custom widget exposes role, name **and** value, on every path
+### SC 4.1.2 — A custom widget exposes role, name **and** value, on every path
 
-`SC 4.1.2` · **Level A**
+**Level A**
 
 A slider built from a `<div>` needs the full contract, and the value must be written from every
 path that can change it — keyboard, drag, and click-on-track:
@@ -176,9 +176,9 @@ path that can change it — keyboard, drag, and click-on-track:
 
 ---
 
-### B3 — Focus order matches visual order
+### SC 2.4.3 — Focus order matches visual order
 
-`SC 2.4.3` · **Level A**
+**Level A**
 
 Drive real `Tab` and assert `document.activeElement` at each stop. Responsive layouts are where this
 breaks: a control that moves visually at a breakpoint must move in the DOM too, not be repositioned
@@ -186,9 +186,9 @@ with CSS `order`.
 
 ---
 
-### B4 — A visible focus indicator on every control, styled consistently
+### SC 2.4.7 — A visible focus indicator on every control, styled consistently
 
-`SC 2.4.7` · **Level AA**
+**Level AA**
 
 `outline: 2px solid var(--navy-dark); outline-offset: 3px`. Apply it to **every** focusable thing
 including skip links and inline links — a control that falls back to the browser's default ring
@@ -203,9 +203,9 @@ still passes, but it is a visible inconsistency and the first thing an auditor n
 
 ---
 
-### B5 — A focused control is never left under sticky chrome
+### SC 2.4.11 — A focused control is never left under sticky chrome
 
-`SC 2.4.11` · **Level AA**
+**Level AA**
 
 Use `scroll-padding-top` / `scroll-padding-bottom` on the scroll container equal to the height of
 the fixed bars, or a `focusin` handler that scrolls the control clear. Verify by measuring the
@@ -214,17 +214,17 @@ after `.focus()` catches a smooth scroll mid-flight and reports a false failure.
 
 ---
 
-### B6 — No keyboard trap
+### SC 2.1.2 — No keyboard trap
 
-`SC 2.1.2` · **Level A**
+**Level A**
 
 Tab must cycle through every stop and out the other side. Any disclosure or panel must be escapable.
 
 ---
 
-### B7 — A scrollable region is keyboard reachable
+### SC 2.1.1 — A scrollable region is keyboard reachable
 
-`SC 2.1.1` · **Level A** (ACT rule `0ssw9k`)
+**Level A** (ACT rule `0ssw9k`)
 
 A region that scrolls must be focusable so a keyboard user can scroll it: `tabindex="0"` plus
 `role="group"` and an accessible name.
@@ -236,9 +236,9 @@ A region that scrolls must be focusable so a keyboard user can scroll it: `tabin
 ---
 # 3. Pointer and targets
 
-### C1 — Every target is at least 24×24 CSS px
+### SC 2.5.8 — Every target is at least 24×24 CSS px
 
-`SC 2.5.8` · **Level AA**
+**Level AA**
 
 > **axe will not catch this for you.** `target-size` is `enabled: false` by default in axe-core
 > 4.13.0, so a stock run reports "0 violations" without testing target size at all. Turn it on:
@@ -273,28 +273,34 @@ comfortable number.
 
 ---
 
-### C2 — Activation happens on the up-event
+### SC 2.5.2 — Activation happens on the up-event
 
-`SC 2.5.2` · **Level A**
+**Level A**
 
 Native `<button>` gets this free. A custom control must fire on `pointerup`/`click`, never
 `pointerdown`, so a user can drag off to abort.
 
 ---
 
-### C3 — Dragging always has a non-drag alternative
+### SC 2.5.7 — Dragging always has a non-drag, single-*pointer* alternative
 
-`SC 2.5.7` · **Level AA**
+**Level AA**
 
-A slider thumb that can be dragged must also respond to arrow keys, and ideally to a click on the
-track. Arrow keys alone satisfy the criterion.
+**Arrow keys do not satisfy this criterion, even though a slider needs them anyway for 2.1.1.** Per
+the W3C Understanding note: "achieving keyboard equivalence for a dragging operation does not
+automatically meet this success criterion" — 2.1.1 and 2.5.7 are evaluated independently, and a
+keyboard-only fallback leaves touchscreen users (who may have no physical keyboard at all) with no
+alternative. The actual requirement is a single-pointer, no-drag way to set the value — most simply,
+a `click`/`tap` handler on the track that jumps the thumb straight to that position. A native
+`<input type="range">` gets this for free (the browser owns the interaction); a custom `role="slider"`
+built from a `<div>`/`<button>` must implement the track-click handler explicitly.
 
 ---
 # 4. Visual
 
-### D1 — Text contrast ≥4.5:1, measured on composited pixels
+### SC 1.4.3 — Text contrast ≥4.5:1, measured on composited pixels
 
-`SC 1.4.3` · **Level AA**
+**Level AA**
 
 Over a gradient, an image, or an overlapping element, axe returns **`incomplete`**, not a pass.
 Those must be resolved by hand, on real pixels.
@@ -312,17 +318,17 @@ Those must be resolved by hand, on real pixels.
 
 ---
 
-### D2 — Non-text contrast ≥3:1
+### SC 1.4.11 — Non-text contrast ≥3:1
 
-`SC 1.4.11` · **Level AA**
+**Level AA**
 
 Control boundaries, focus rings and selected-state indicators.
 
 ---
 
-### D3 — No content loss at 320×256 CSS px
+### SC 1.4.10, 1.4.4 — No content loss at 320×256 CSS px
 
-`SC 1.4.10, 1.4.4` · **Level AA**
+**Level AA**
 
 **400% zoom is `setDeviceMetricsOverride{ width:320, height:256, deviceScaleFactor:4 }`.**
 `dsf 1` is a small screen — a different test.
@@ -334,9 +340,9 @@ Sufficient techniques: **C31** (flexbox), **C32** (media queries + grid), **C34*
 
 ---
 
-### D4 — The text-spacing overrides must not clip anything
+### SC 1.4.12 — The text-spacing overrides must not clip anything
 
-`SC 1.4.12` · **Level AA**
+**Level AA**
 
 ```css
 * { line-height:1.5 !important; letter-spacing:.12em !important; word-spacing:.16em !important; }
@@ -349,11 +355,33 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 > override `line-height`, so a 24px target built on line-height collapses under the very override
 > you are being tested against. Padding is unaffected.
 
+> **Fix the width first, not just the recovery path.** A `<select>`'s floating label (e.g. "Motor /
+> Battery Capacity", or a value like "The new ID.3 Neo") can run out of room under these overrides
+> if two selects are forced to share a row. `.select-group` stacks them vertically, unconditionally
+> (no breakpoint gating — this page's own grid makes available width non-monotonic across
+> viewports, so no single breakpoint threshold holds), which gives each label the full row width
+> everywhere and eliminates the truncation outright — verified zero clipping at every tested width.
+>
+> As a secondary, belt-and-suspenders safeguard (for if content ever grows past the stacked width),
+> wrap that select's `<option>`s in an `<optgroup label="…">` carrying the identical text, so opening
+> the select (its own normal operation) reveals it in full:
+> ```html
+> <select aria-labelledby="battery-fl-label">
+>   <optgroup label="Motor / Battery Capacity">
+>     <option value="50">125 kW (170 PS) · 50 kWh</option>
+>   </optgroup>
+> </select>
+> ```
+> Do this in **every** place that rebuilds the select's `innerHTML` (a trim-change handler, etc.) —
+> a static markup fix alone will be silently undone the moment the options are rebuilt in JS. Treat
+> the optgroup as a safety net, not the primary fix: a label with no matching optgroup, and no
+> layout fix either, has no escape — it must actually fit, or the criterion is a real failure.
+
 ---
 
-### D5 — Never lock orientation
+### SC 1.3.4 — Never lock orientation
 
-`SC 1.3.4` · **Level AA**
+**Level AA**
 
 No `@media (orientation:)` rule that hides or restricts content.
 
@@ -372,7 +400,7 @@ No `@media (orientation:)` rule that hides or restricts content.
    twice on a page, and `duplicate-id-aria` is a real failure.
 5. **A CSS-in-JS `:focus-visible` must survive minification.** Verify the ring in the built bundle,
    not just in dev.
-6. **Icons: name or hide at the component boundary** (A1). A per-call-site decision will be missed.
+6. **Icons: name or hide at the component boundary** (SC 1.1.1). A per-call-site decision will be missed.
 7. **Live regions must mount before they are written to.** Render the region unconditionally; write
    into it on update.
 
@@ -425,12 +453,16 @@ own click handler, so it is itself a target, and the thumb sits inside it — ce
 centre-to-box against a 12px requirement. That one *is* exception-dependent — give it 24px if the
 layout ever tightens.
 
-**The six `<img alt="Edit">` are a recorded decision, not a defect.** They sit inside `<label>`s and
-are not controls; each of the six spinbuttons they label has a unique name. But a screen-reader user
-reading linearly hears six "Edit" graphics with no indication of *what* is edited. `alt=""` is
-semantically right and was deliberately avoided because it produced 10 WAVE "Empty form label"
-errors. `aria-hidden="true"` on the `<img>` is the likely resolution — **re-verify against WAVE
-before shipping it.**
+**The ten edit icons were re-architected from `<label for>` to real `<button>`s this session — the
+old "six identically-named Edit graphics" decision no longer applies.** Each button now carries its
+own unique, descriptive `aria-label` (e.g. "Edit home charging price"); the icon inside stays
+`alt=""` so it is never announced a second time. That resolves the linear-reading ambiguity outright
+— there's no longer a generic "Edit" name for a screen-reader user to disambiguate. The trade-off:
+`<button>` is a real Tab stop, `<label for>` was not, so this raised the app's Tab-stop count from
+22 to 29. Nothing in 4.1.2, 2.1.1 or 2.4.3 requires reverting it, but each of these buttons now
+does nothing for a keyboard user beyond refocusing a field they can already reach directly — worth
+a deliberate product call (keep them focusable for a reason, or set `tabindex="-1"` to keep them
+pointer/touch-only) rather than a silent side effect of the naming fix.
 
 **Error handling is already correct — keep it.** An out-of-range price sets `aria-invalid="true"`,
 links a `.field-error` message with `aria-describedby`, and names the permitted range in text. That

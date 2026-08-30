@@ -106,21 +106,32 @@ async function stableFocusRect(page, tries = 40) {
 // two orders genuinely differ — desktop puts the frequency slider before the price
 // input (left column then right), mobile puts the price input first because the slider
 // is a separate row underneath it. Both match visual order; neither is a typo.
+// The four "More information" buttons now carry stable ids (info-btn-distance/
+// -miles/-location/-fuel) so each opens its own info modal; key() below resolves
+// an element with an id to that id rather than the generic 'button.q-icon-btn'.
+// Edit buttons are real focusable controls now (each jumps to its price field),
+// so they are real tab stops right after the field they follow in the DOM.
 const ORDER_DESKTOP = [
-  'a.skip-link', 'button.q-icon-btn', 'dist-thumb-1', 'dist-thumb-2', 'button.q-icon-btn',
-  'miles-slider', 'button.q-icon-btn',
-  'step-thumb-home', 'price-home-d', 'step-thumb-work', 'price-work-d',
-  'step-thumb-public', 'price-public-d', 'step-thumb-motorway', 'price-motorway-d',
-  'button.reset-link', 'button.q-icon-btn', 'price-petrol', 'price-diesel',
-  'trim-select', 'battery-select', 'button.cta-button',
+  'a.skip-link', 'info-btn-distance', 'dist-thumb-1', 'dist-thumb-2', 'info-btn-miles',
+  'miles-slider', 'info-btn-location',
+  'step-thumb-home', 'price-home-d', 'button.edit-icon-btn',
+  'step-thumb-work', 'price-work-d', 'button.edit-icon-btn',
+  'step-thumb-public', 'price-public-d', 'button.edit-icon-btn',
+  'step-thumb-motorway', 'price-motorway-d', 'button.edit-icon-btn',
+  'button.reset-link', 'info-btn-fuel',
+  'price-petrol', 'button.edit-icon-btn', 'price-diesel', 'button.edit-icon-btn',
+  'trim-select', 'battery-select', 'info-btn-cost', 'button.cta-button',
 ];
 const ORDER_MOBILE = [
-  'a.skip-link', 'button.q-icon-btn', 'dist-thumb-1', 'dist-thumb-2', 'button.q-icon-btn',
-  'miles-slider', 'button.q-icon-btn',
-  'price-home-m', 'step-thumb-home-m', 'price-work-m', 'step-thumb-work-m',
-  'price-public-m', 'step-thumb-public-m', 'price-motorway-m', 'step-thumb-motorway-m',
-  'button.reset-link', 'button.q-icon-btn', 'price-petrol', 'price-diesel',
-  'trim-select', 'battery-select', 'button.cta-button',
+  'a.skip-link', 'info-btn-distance', 'dist-thumb-1', 'dist-thumb-2', 'info-btn-miles',
+  'miles-slider', 'info-btn-location',
+  'price-home-m', 'button.edit-icon-btn', 'step-thumb-home-m',
+  'price-work-m', 'button.edit-icon-btn', 'step-thumb-work-m',
+  'price-public-m', 'button.edit-icon-btn', 'step-thumb-public-m',
+  'price-motorway-m', 'button.edit-icon-btn', 'step-thumb-motorway-m',
+  'button.reset-link', 'info-btn-fuel',
+  'price-petrol', 'button.edit-icon-btn', 'price-diesel', 'button.edit-icon-btn',
+  'trim-select', 'battery-select', 'info-btn-cost', 'button.cta-button',
 ];
 const expectedOrder = (page) =>
   page.viewportSize().width >= 960 ? ORDER_DESKTOP : ORDER_MOBILE;
@@ -185,17 +196,18 @@ test('B6 no keyboard trap — Tab reaches every stop and Shift+Tab retraces it',
 
 /* ─── B4 · focus indicator ─────────────────────────────────────────────────── */
 
-// The audited ring is `outline:2px solid #1B2236` = rgb(27, 34, 54). Asserted on the
-// COMPUTED value after a REAL Tab, on EVERY stop, for three reasons each of which is a
-// way this test could have been fake:
-//   - Chrome normalises #1B2236 to rgb(27, 34, 54), so a stylesheet-text check passes
+// The audited ring is `outline:2px solid var(--focus-orange)` (#C86C03) = rgb(200, 108, 3),
+// matching range-simulator's focus-ring convention. Asserted on the COMPUTED value after
+// a REAL Tab, on EVERY stop, for three reasons each of which is a way this test could
+// have been fake:
+//   - Chrome normalises #C86C03 to rgb(200, 108, 3), so a stylesheet-text check passes
 //     while the ring is broken;
 //   - `:focus-visible` does not match a programmatic .focus(), so a .focus()-driven
 //     check measures nothing;
 //   - the ring is set by FIVE separate rules (.dist-thumb/.step-thumb-el, select,
 //     range-sibling, reset-link, number input). Checking one control lets a mutation
 //     to any of the other four straight through.
-const NAVY = 'rgb(27, 34, 54)';
+const FOCUS_ORANGE = 'rgb(200, 108, 3)';
 
 test('B4 every tab stop paints a focus indicator, and the audited ring where the app styles one',
   async ({ page }) => {
@@ -231,7 +243,7 @@ test('B4 every tab stop paints a focus indicator, and the audited ring where the
       expect(s.style, `${s.k} paints no outline at all`).not.toBe('none');
       expect(s.width, `${s.k} outline width`).toBeGreaterThanOrEqual(1);
       if (s.styled) {
-        expect(s.color, `audited ring colour on ${s.k} (ring on ${s.ringOn})`).toBe(NAVY);
+        expect(s.color, `audited ring colour on ${s.k} (ring on ${s.ringOn})`).toBe(FOCUS_ORANGE);
         expect(s.style, `audited ring style on ${s.k}`).toBe('solid');
         expect(s.width, `audited ring width on ${s.k}`).toBeGreaterThanOrEqual(2);
       }
@@ -576,7 +588,7 @@ test('A6 the live region is mounted, polite, and populated at rest', async ({ pa
     const el = document.getElementById('cost-live');
     return { live: el.getAttribute('aria-live'), text: el.textContent.trim(),
              evHidden: document.getElementById('result-ev-cost').getAttribute('aria-hidden'),
-             stickyHidden: document.getElementById('sticky-ev-cost').getAttribute('aria-hidden') };
+             stickyHidden: document.getElementById('sticky-cost-display').getAttribute('aria-hidden') };
   });
   expect(s.live).toBe('polite');
   expect(s.text).toMatch(/^Estimated electricity cost [\d,]+ pounds per year$/);
