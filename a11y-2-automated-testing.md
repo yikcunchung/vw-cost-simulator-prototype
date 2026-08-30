@@ -40,7 +40,7 @@ The local `index.html` and the deployed build are **byte-identical**.
 | Required | Status | Note |
 |---|---|---|
 | **axe DevTools 4.131.2** | ◐ **Equivalent, not identical** | This audit ran **axe-core 4.13.0**, the library the extension embeds, over CDP with no `runOnly` filter. The extension's build number is not the engine version. One run through the 4.131.2 UI is still worth doing to satisfy the protocol literally; expect agreement |
-| **WAVE Evaluation Tool 3.3.1.0** | ✅ **Done** | Real engine via `wave.webaim.org/report#/<url>` against the public URL |
+| **WAVE Evaluation Tool 3.3.1.0** | ✅ **Done — hosted and extension** | Hosted engine via `wave.webaim.org/report#/<url>`; extension pass against the public URL confirmed **0 errors** in the default state. Dynamic-state (e.g. edit-button/modal-open) extension check not yet confirmed |
 | **Zoom 400% and 320 × 256 px** | ✅ **Done** | `320×256 @ deviceScaleFactor 4`. **dsf 1 is a small screen, not a zoomed one** |
 | **Operated via the keyboard** | ✅ **Done** | Driven with real `Input.dispatchKeyEvent` |
 | **NVDA 2026.1.1.55980** | ❌ **Not done** | The one real gap — §5 |
