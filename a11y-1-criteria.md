@@ -74,7 +74,7 @@ criteria are not required and are not listed.
 | **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, no horizontal scroll, all 29 controls present. |
 | **1.4.5** | Images of Text | AA | Yes | ✅ Pass* | No images of text. All text is live text. |
 | **1.4.10** | Reflow | AA | Yes | ✅ Pass | No horizontal scroll at 320 / 390 / 768 / 1440 or at 400% zoom. The four desktop price rows are swapped for `-m` mobile equivalents at narrow widths — a responsive substitution, not a loss: the control count is 29 at every viewport. |
-| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | The shared `.fl-input`/`.fl-select` resting-state border (`--border-input`) was `rgb(161,164,172)` (2.29:1, below 3:1) at the time of the previous audit pass and needed an exception argument (chevron icon 14.80:1, floating label + edit-icon button as alternate cues) to pass. **Corrected to `rgb(110,116,126)` (4.32:1) for parity with range-simulator/charging-time-simulator**, which use this darker value — now clears 3:1 outright, no exception needed. The focus ring is `var(--focus-orange)` `#C86C03`, measured **3.44:1** against the page background and **3.51:1** against the navy-dark step-thumb background: passes, by a normal margin. |
+| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | The shared `.fl-input`/`.fl-select` resting-state border (`--border-input`) is `rgb(110,116,126)` (4.32:1), clearing 3:1 outright — no exception argument needed. This deliberately deviates from the real production core components (which use `rgb(161,164,172)`, 2.29:1, verified by pixel-sampling a live screenshot): **this prototype's purpose is to demonstrate a build that passes every criterion outright, regardless of whether the upstream core component itself does.** The focus ring is `var(--focus-orange)` `#C86C03`, measured **3.44:1** against the page background and **3.51:1** against the navy-dark step-thumb background: also clears 3:1. |
 | **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | All four overrides applied (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440 / 390 / 320: **no newly clipped element, no control lost, no horizontal scroll.** Detector validated with a canary that fits at the default line-height and overflows at 1.5. `.select-group` stacks the trim-select and battery-select vertically, unconditionally (no breakpoint gating), so each floating label ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") gets the full row width at every viewport, including 960–1024px where this app's own grid narrows the shared column below both mobile and desktop widths — verified zero truncation across all tested widths. As a secondary safeguard, each select's `<option>`s are also wrapped in an `<optgroup>` whose `label` matches the floating label text (e.g. `<optgroup label="Motor / Battery Capacity">`), so even if content ever grows past the stacked width, opening the select — its own standard operation — reveals the full text natively. |
 | **1.4.13** | Content on Hover or Focus | AA | No | ⚪ N/A | No hover- or focus-triggered overlay. |
 
@@ -197,10 +197,15 @@ rationale the original `<label for>` comment recorded, and is worth a deliberate
 buttons, e.g. for a future action; or set `tabindex="-1"` on them so they stay pointer/touch-only)
 rather than shipping it silently.
 
-**One thing no automated pass can close:** a screen-reader run. VoiceOver is planned; the protocol
-names NVDA 2026.1.1.55980, so record that as a deviation. Two tool runs also remain — one pass
-through the axe DevTools 4.131.2 UI, and a WAVE run from the browser extension. See
-`a11y-2-automated-testing.md`.
+**VoiceOver, WAVE (extension, both states), and axe DevTools (automated scan + Interactive Elements
++ Forms guided tests) have all now been run manually** — see `a11y-2-automated-testing.md` §9 for
+results. Every AI-flagged item was a false positive; no markup changes were required from any of the
+guided tests themselves. A real gap **was** found during this pass, independently of any automated
+tool, by comparing against the real production component's DOM: the distance-distribution thumbs
+statically exposed `aria-valuemin="0" aria-valuemax="100"` regardless of the other thumb's actual
+position, when the true operable range is bounded by it. Fixed to update dynamically — see
+`a11y-3-implementation.md`. **NVDA 2026.1.1.55980 is the one remaining gap**, recorded as a deviation
+(VoiceOver is not a substitute) — required before formal BITV/EN 301 549 sign-off.
 
 # Decisions an auditor could challenge
 

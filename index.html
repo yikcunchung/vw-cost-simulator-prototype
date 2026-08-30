@@ -371,7 +371,7 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .result-col-val-lg { font-family:var(--font-head); font-size:28px; font-weight:700; color:#fff; line-height:1.2; }
 @media (max-width:439px) { .result-col-val-lg { font-size:22px; } }
 .result-col-val-sm { font-family:var(--font-head); font-size:18px; font-weight:700; color:#fff; line-height:1.2; }
-.result-divider { height:1px; background:rgba(255,255,255,.2); }
+.result-divider { height:0; border-top:1px solid rgb(161,164,172); }
 
 /* ── CTA (outside result card, standard navy outline) ── */
 .cta-button {
@@ -657,11 +657,11 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
           <div class="dist-block" id="dist-block">
             <div class="dist-divider" id="dist-divider-1" style="left:33.33%;"></div>
             <div class="dist-divider" id="dist-divider-2" style="left:66.66%;"></div>
-            <button class="dist-thumb" id="dist-thumb-1" role="slider" aria-label="City driving share"
+            <button class="dist-thumb" id="dist-thumb-1" role="slider" aria-label="City / Country road split"
                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="33" style="left:33.33%; top:0; transform:translate(-50%,-50%);">
               <svg aria-hidden="true" width="12" height="12" viewBox="6 6 12 12" fill="none"><path d="M15.72 9.09L14.73 10L15.93 11.35H8.12L9.32 10L8.32 9.11C6.06 11.61 6.06 11.71 6.06 12C6.06 12.29 6.06 12.4 8.33 14.91L9.33 14.02L8.12 12.67H15.93L14.73 14L15.73 14.89C17.99 12.4 17.99 12.3 17.99 12C17.99 11.7 17.99 11.61 15.72 9.09Z" fill="white"/></svg>
             </button>
-            <button class="dist-thumb" id="dist-thumb-2" role="slider" aria-label="Country road and motorway boundary"
+            <button class="dist-thumb" id="dist-thumb-2" role="slider" aria-label="Country road / Motorway split"
                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="67" style="left:66.66%; bottom:0; transform:translate(-50%,50%);">
               <svg aria-hidden="true" width="12" height="12" viewBox="6 6 12 12" fill="none"><path d="M15.72 9.09L14.73 10L15.93 11.35H8.12L9.32 10L8.32 9.11C6.06 11.61 6.06 11.71 6.06 12C6.06 12.29 6.06 12.4 8.33 14.91L9.33 14.02L8.12 12.67H15.93L14.73 14L15.73 14.89C17.99 12.4 17.99 12.3 17.99 12C17.99 11.7 17.99 11.61 15.72 9.09Z" fill="white"/></svg>
             </button>
@@ -1195,10 +1195,15 @@ function initDistSlider() {
 
     // SC 4.1.2: role=slider means the exposed value must follow the visual
     // position on every path, or AT reads a stale number.
+    // The real operable range for each thumb is bounded by the other thumb's
+    // current position (neither can cross the other) - exposing a static 0-100
+    // range would tell AT users they can drag further than they actually can.
+    thumb1.setAttribute('aria-valuemax', String(v2));
     thumb1.setAttribute('aria-valuenow', String(v1));
-    thumb1.setAttribute('aria-valuetext', v1 + '% city');
+    thumb1.setAttribute('aria-valuetext', vals[0] + '% City, ' + vals[1] + '% Country road');
+    thumb2.setAttribute('aria-valuemin', String(v1));
     thumb2.setAttribute('aria-valuenow', String(v2));
-    thumb2.setAttribute('aria-valuetext', v2 + '% by country road boundary');
+    thumb2.setAttribute('aria-valuetext', vals[1] + '% Country road, ' + vals[2] + '% Motorway');
     updateCost();
   }
 

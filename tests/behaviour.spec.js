@@ -514,9 +514,12 @@ test('B2 the dist thumbs expose a value that matches the visible segments', asyn
       expect(s.focused, `${k} moved focus off dist-thumb-${thumb}`).toBe(`dist-thumb-${thumb}`);
       expect(s.segs, `segments must be [v1, v2-v1, 100-v2] = ${[s.v1, s.v2 - s.v1, 100 - s.v2]}`)
         .toEqual([s.v1, s.v2 - s.v1, 100 - s.v2]);
-      expect(s.x1, 'aria-valuetext must carry the same number as aria-valuenow')
-        .toBe(`${s.v1}% city`);
-      expect(s.x2).toBe(`${s.v2}% by country road boundary`);
+      // aria-valuetext announces both neighbouring segments, matching range-simulator's
+      // established pattern for this shared component (parity fix, 2026-08-31).
+      const cityPct = s.v1, countryPct = s.v2 - s.v1, motorwayPct = 100 - s.v2;
+      expect(s.x1, 'aria-valuetext must carry the same numbers as the visible segments')
+        .toBe(`${cityPct}% City, ${countryPct}% Country road`);
+      expect(s.x2).toBe(`${countryPct}% Country road, ${motorwayPct}% Motorway`);
       expect(s.v1).toBeLessThanOrEqual(s.v2);
     }
   }

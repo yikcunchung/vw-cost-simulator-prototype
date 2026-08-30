@@ -174,6 +174,32 @@ path that can change it — keyboard, drag, and click-on-track:
 > *every* ARIA widget, even when `aria-valuetext` is set. Whether it reaches the platform API is not
 > measurable over CDP — it needs a real screen reader. Do not read that empty string as a failure.
 
+> **A boundary thumb's value should describe both segments it separates, not just one.** The
+> distance-distribution thumbs (`dist-thumb-1`/`dist-thumb-2`) are boundaries between three named
+> segments (City/Country road/Motorway); each thumb's `aria-valuetext` originally announced only its
+> own single segment (e.g. "33% city"), which tells a screen-reader user what one side is but not
+> what's being traded off against the other. Fixed to announce both neighbours' own widths, matching
+> range-simulator's identical component — `dist-thumb-1`: "33% City, 34% Country road",
+> `dist-thumb-2`: "34% Country road, 33% Motorway". Found via a manual VoiceOver pass, not any
+> automated tool — this class of "technically has a value, but not a useful one" defect is invisible
+> to axe/WAVE, which only check that `aria-valuetext` is non-empty and current, not that its content
+> actually helps. `aria-label`s were also aligned to range-simulator's wording: "City / Country road
+> split" / "Country road / Motorway split".
+
+> **A slider's exposed min/max must reflect the range it can actually reach, not the widget's
+> theoretical range.** Both distance-distribution thumbs statically advertised `aria-valuemin="0"
+> aria-valuemax="100"`, but neither can actually be dragged past the other (the JS clamps them so
+> they can't cross) — so at rest (33/67), thumb1's real ceiling is 67, not 100. Found by comparing
+> against the real production component's DOM directly (`aria-valuemax="65"` on its left handle when
+> the right handle sat at 65) — not something any of the automated tools or guided tests flagged.
+> Fixed by updating each thumb's `aria-valuemax`/`aria-valuemin` to the other thumb's live position
+> on every `setPositions()` call, the same place `aria-valuenow`/`aria-valuetext` are already kept
+> current:
+> ```js
+> thumb1.setAttribute('aria-valuemax', String(v2));
+> thumb2.setAttribute('aria-valuemin', String(v1));
+> ```
+
 ---
 
 ### SC 2.4.3 — Focus order matches visual order
