@@ -140,6 +140,10 @@ const key = (s) => s.id || s.tag + '.' + s.cls.split(/\s+/)[0];
 
 test('B3 the tab order is exactly the audited sequence', async ({ page }) => {
   await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab order (which includes it) is valid.
+  await page.selectOption('#trim-select', 'Life');
   const stops = (await tabSweep(page)).map(key);
   expect(stops).toEqual(expectedOrder(page));
 });
@@ -174,6 +178,10 @@ test('B3 controls hidden at this breakpoint are OUT of the tab order', async ({ 
 
 test('B6 no keyboard trap — Tab reaches every stop and Shift+Tab retraces it', async ({ page }) => {
   await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab order (which includes it) is valid.
+  await page.selectOption('#trim-select', 'Life');
   const order = expectedOrder(page);
   // tabSweep stops when the FIRST stop repeats, so terminating at exactly order.length
   // is the proof that Tab left the last control and wrapped rather than sticking.
@@ -212,6 +220,10 @@ const FOCUS_ORANGE = 'rgb(200, 108, 3)';
 test('B4 every tab stop paints a focus indicator, and the audited ring where the app styles one',
   async ({ page }) => {
     await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab order (which includes it) is valid.
+    await page.selectOption('#trim-select', 'Life');
     await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
 
     const seen = [];
@@ -264,6 +276,10 @@ test('B5 no focused control is entirely hidden by the fixed chrome', async ({ pa
   // Measured AFTER the scroll settles — a synchronous read right after the Tab
   // catches `scroll-padding` mid-flight and reports a false failure (a11y-3 B5).
   await settle(page);
+    // Trend (the default trim) has only one battery option, which correctly
+    // disables #battery-select (not a real choice) - switch to a trim with real
+    // options so the audited tab order (which includes it) is valid.
+  await page.selectOption('#trim-select', 'Life');
   await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
 
   const bad = [];
