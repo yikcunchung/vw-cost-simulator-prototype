@@ -1,11 +1,10 @@
 # A11y 1 of 3 — WCAG 2.2 criterion checklist
 
 **App:** VW Cost Simulator (`cost-simulator`) — a single-page simulator.
-**Audited:** 2026-08-22, re-verified 2026-08-30 against the local working tree (which is ahead of
-`origin/main` by one commit, plus further uncommitted changes — the orange focus ring, the
-button-based edit icons, the ID. Polo model group and the resulting 29-control tab order below are
-**not yet on the live deployment**; re-verify byte-for-byte before citing this doc against the URL).
-**Deployed at:** https://yikcunchung.github.io/vw-cost-simulator-prototype/ (stale relative to this doc — see above)
+**Audited:** 2026-08-22, re-verified 2026-08-31 — the orange focus ring, the button-based edit
+icons, the ID. Polo model group and the resulting 29-control tab order below are all pushed to
+`origin/main` and live on the deployment; the working tree carries no uncommitted changes.
+**Deployed at:** https://yikcunchung.github.io/vw-cost-simulator-prototype/
 **Scope:** the whole page. This app is standalone, so there is no component-versus-page split and
 nothing is out of scope. **PDFs are excluded** — the app ships none; they would be a separate
 conformance surface under EN 301 549 clause 10, checked with PAC.
@@ -116,7 +115,7 @@ criteria are not required and are not listed.
 | **2.4.4** | Link Purpose (In Context) | A | No | ⚪ N/A | No links other than the skip link, which is named. |
 | **2.4.5** | Multiple Ways | AA | No | ⚪ N/A | A standalone single page. SC 2.4.5 applies to a *set* of web pages; there is no set. |
 | **2.4.6** | Headings and Labels | AA | Yes | ✅ Pass | One `h1`, no skipped levels. Every control name is descriptive and location-qualified ("Home charging price in pounds per kWh"). |
-| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | Every one of the 29 stops shows a visible focus indicator. The number inputs (six visible at a time, ten total across the desktop/mobile breakpoint variants) previously indicated focus only by shifting their border from `#6E747E` to `#997F67` — a change of just **1.25:1** between states, and the only controls in the app not using the shared outline. They now use `outline:2px solid var(--focus-orange)` (`#C86C03`), the same ring as every other control (see 1.4.11 for measured contrast: 3.44:1 on the page background, 3.51:1 on navy-dark). The ring colour itself changed from navy to orange this session to match the range-simulator convention; re-verify it renders identically once this reaches the live deployment. |
+| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | Every one of the 29 stops shows a visible focus indicator. The number inputs (six visible at a time, ten total across the desktop/mobile breakpoint variants) previously indicated focus only by shifting their border from `#6E747E` to `#997F67` — a change of just **1.25:1** between states, and the only controls in the app not using the shared outline. They now use `outline:2px solid var(--focus-orange)` (`#C86C03`), the same ring as every other control (see 1.4.11 for measured contrast: 3.44:1 on the page background, 3.51:1 on navy-dark). The ring colour itself changed from navy to orange to match the range-simulator convention; verified rendering identically on the live deployment. |
 | **2.4.11** | Focus Not Obscured (Minimum) | AA | Yes | ✅ Pass | No fixed or sticky element overlaps a focused control; all measured inside the viewport after settling. |
 
 
