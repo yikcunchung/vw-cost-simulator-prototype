@@ -214,8 +214,9 @@ test result.
 
 **The strongest claim this evidence supports:**
 
-> *"This app meets WCAG 2.2 A/AA on every automated and runtime check available, pending
-> screen-reader verification."*
+> *"This app meets WCAG 2.2 A/AA on every automated and runtime check available. VoiceOver, WAVE,
+> and axe DevTools have all been run manually; NVDA is the one instrument still owed."*
 
 That is stronger than a tool-clean claim, and unlike a tool-clean claim it is true — the one real
-defect found here (unnamed graphics, SC 1.1.1) was invisible to axe, WAVE and Nu alike.
+defect found here (the distance-thumbs' static, boundary-only range and naming, SC 4.1.2) was
+invisible to axe, WAVE and Nu alike.
