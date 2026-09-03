@@ -344,6 +344,40 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .vehicle-asset img { width:100%; height:100%; object-fit:cover; display:block; }
 .model-disclaimer { font-family:var(--font-text); font-size:14px; color:var(--navy); line-height:1.5; }
 
+/* "Show technical data" — label + 1px underline rect (same pattern as .reset-label/.reset-stroke) */
+.tech-link { display:inline-flex; flex-direction:column; gap:1px; cursor:pointer; width:fit-content; background:none; border:none; padding:0; font:inherit; margin-top:8px; }
+.tech-link:focus-visible { outline:2px solid var(--focus-orange); outline-offset:2px; border-radius:2px; }
+.tech-link-label { font-family:var(--font-text); font-size:16px; font-weight:400; color:var(--navy-dark); line-height:1.2; }
+.tech-link-stroke { height:1px; background:var(--navy-dark); }
+
+/* Reference badge — small numbered footnote marker, dark theme (used on the navy result card).
+   24x24 wrapper matches the adjacent 24px info-icon hit target; visible circle is 16x16. */
+.ref-badge-wrapper { width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ref-badge {
+  width:16px; height:16px; border-radius:100px;
+  background:var(--border-light); border:none;
+  color:var(--navy); font-family:var(--font-text); font-size:12px; font-weight:400;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:0; cursor:pointer; text-decoration:none; line-height:1;
+}
+.ref-badge:hover, .ref-badge:active { background:#997F67; }
+.ref-badge:focus-visible { outline:2px solid var(--focus-orange); outline-offset:2px; }
+
+/* FAQ Accordion */
+.faq-section { margin-top:8vw; display:flex; flex-direction:column; gap:28px; }
+.faq-heading { font-family:var(--font-head); font-size:28px; font-weight:700; line-height:1.2; color:var(--navy-dark); text-align:center; margin:0; }
+.faq-list { display:flex; flex-direction:column; width:62.5vw; margin:0 auto; }
+@media (max-width:375px) { .faq-list { width:53.33vw; } }
+.faq-item { border-bottom:1px solid var(--border-light); }
+.faq-question {
+  width:100%; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+  padding:16px 0; background:none; border:none; cursor:pointer; text-align:left;
+  font-family:var(--font-text); font-size:16px; font-weight:700; color:var(--navy-dark); line-height:1.2;
+}
+.faq-question:focus-visible { outline:2px solid var(--focus-orange); outline-offset:2px; border-radius:2px; }
+.faq-chevron { flex-shrink:0; width:24px; height:24px; color:var(--navy-dark); }
+.faq-answer-copy { font-family:var(--font-text); font-size:16px; font-weight:400; color:var(--navy); line-height:1.5; padding:0 0 20px; margin:0; }
+
 /* ── Result card ── */
 .result-card {
   background:var(--navy);
@@ -355,7 +389,7 @@ input[type="range"] { position:absolute; top:50%; transform:translateY(-50%); le
 .result-headline { display:flex; align-items:center; }
 .result-headline-text { font-family:var(--font-text); font-size:16px; font-weight:700; color:#fff; line-height:1.3; }
 .result-headline-info { width:20px; height:20px; flex-shrink:0; margin-top:1px; }
-.result-headline .q-icon-btn { color: #fff; }
+.result-headline .q-icon-btn { color: #fff; margin-left: 0; }
 .result-ev-block { display:flex; flex-direction:column; gap:2px; }
 .result-ev-label { font-family:var(--font-text); font-size:12px; font-weight:700; color:#fff; line-height:1.5; }
 .result-ev-value { font-family:var(--font-head); font-size:56px; font-weight:700; color:#fff; line-height:1; display:flex; align-items:baseline; gap:0; }
@@ -552,8 +586,10 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
   background-color:#fff;
 }
 .info-modal-title {
-  font-family:var(--font-head); font-weight:700; font-size:20px;
-  line-height:1.2; color:var(--navy);
+  font-family:var(--font-head); font-weight:700;
+  font-size:clamp(1.38rem, 1.22rem + 0.44vw, 1.75rem);
+  line-height:120%; letter-spacing:calc(-0.02em + 0.02rem);
+  color:var(--navy);
 }
 .info-modal-close {
   position:absolute; top:24px; right:min(4.16vw,106.66px); z-index:2;
@@ -575,6 +611,14 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
 .info-modal-body ul:last-child { margin-bottom:0; }
 .info-modal-body li { margin-bottom:8px; }
 .info-modal-body li:last-child { margin-bottom:0; }
+.info-modal-subtitle { font-family:var(--font-text); font-weight:700; font-size:16px; color:var(--navy-dark); margin:0 0 16px; }
+.info-modal-link-row { display:flex; justify-content:flex-end; margin:0 0 16px; }
+.info-modal-link-row a { font-family:var(--font-text); font-size:14px; color:var(--navy-dark); text-decoration:underline; }
+.info-modal-section-header { font-family:var(--font-text); font-weight:700; font-size:16px; color:var(--navy-dark); margin:0 0 8px; }
+.info-modal-rows { display:flex; flex-direction:column; margin:0 0 16px; }
+.info-modal-row { display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:12px 0; border-bottom:1px solid var(--border-light); }
+.info-modal-row dt { font-family:var(--font-text); font-size:16px; font-weight:400; color:var(--navy); margin:0; }
+.info-modal-row dd { font-family:var(--font-text); font-size:16px; font-weight:700; color:var(--navy-dark); margin:0; text-align:right; }
 /* SC 2.3.3 — honour a reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   #info-modal { transition-duration:0.001ms !important; }
@@ -983,9 +1027,7 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
                      "Motor / Battery Capacity"; the "/" had become the word "and", so the
                      visible text was not contained in the name. -->
                 <select id="battery-select" aria-labelledby="battery-fl-label">
-                  <optgroup label="Motor / Battery Capacity">
-                    <option value="50">125 kW (170 PS) · 50 kWh</option>
-                  </optgroup>
+                  <option value="50">125 kW (170 PS) · 50 kWh</option>
                 </select>
                 <span class="fl-chevron"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M 12 17.713 C 11.55 17.713 11.127 17.535 10.811 17.213 L 1.025 7.216 L 1.975 6.285 L 11.76 16.281 C 11.89 16.412 12.109 16.413 12.24 16.280 L 22.025 6.285 L 22.975 7.216 L 13.19 17.212 C 12.873 17.536 12.45 17.713 12 17.713 Z" fill="rgba(0,30,80,1)"/></svg></span>
               </div>
@@ -995,12 +1037,17 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
             <img src="assets/media/id3/id3-trend.webp" alt="Volkswagen ID.3 Neo" id="car-img">
           </div>
           <p class="model-disclaimer" id="model-disclaimer">Electricity combined fuel consumption 22.7–22.5 kWh / 100 mi · CO₂ emissions combined 0 g / km</p>
+          <button class="tech-link" type="button" id="tech-link-btn">
+            <span class="tech-link-label">Show technical data</span>
+            <span class="tech-link-stroke" aria-hidden="true"></span>
+          </button>
         </div>
 
         <!-- Result card -->
         <div class="result-card">
           <div class="result-headline">
             <span class="result-headline-text">Estimated costs and CO₂ emissions</span>
+            <span class="ref-badge-wrapper"><a href="#disclaimer" class="ref-badge" aria-label="See disclaimer 1">1</a></span>
             <button class="q-icon-btn" id="info-btn-cost" aria-label="More information: How your estimated cost is calculated"><svg aria-hidden="true" class="q-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.67 11.999c0-4.841-3.339-8.67-8.67-8.669S3.33 7.159 3.33 12s3.339 8.67 8.67 8.67 8.67-3.83 8.67-8.671m-7.767 3.669H16v1.33H7.997v-1.33h3.576v-4.33h-2.07v-1.33h3.4zM12 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2m10 5.999c0 5.523-3.882 10-10 10.001S2 17.523 2 12 5.882 2 12 2s10 4.476 10 9.999"/></svg></button>
           </div>
           <!-- EV electricity cost -->
@@ -1064,10 +1111,55 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
     </div>
   </div>
 
-  <div class="disclaimer">
+  <div class="disclaimer" id="disclaimer">
     <span class="disclaimer-num">1</span>
     <p class="disclaimer-copy">Estimated costs are calculated based on multiplying the price of electricity per charge with the number of charges needed in a year, based on the vehicles WLTP range and energy consumption and the users selected mileage and driving profile. Annual costs, CO₂ emissions and charging frequency are estimates for the standard UK specification vehicle (model year 2026) based on user inputs (including annual distance), test values (including WLTP combined consumption), the vehicle you chose (including net battery capacity) and average values (including electricity costs). Assumes charging from 0–100% and 100% of the battery's rated charge capacity. For information and comparability only. Results should not be relied upon. Real world results will differ. Petrol and diesel comparisons assume 8.0 l/100km and 7.0 l/100km respectively. CO₂ based on 2.31 kg/l petrol and 2.68 kg/l diesel. Data correct as at February 2026.</p>
   </div>
+
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <h2 id="faq-heading" class="faq-heading">Cost simulator FAQs</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
+          <span class="faq-question-label">How do I find out how much it costs to charge at a charging station?</span>
+          <svg class="faq-chevron" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 18.9993C11.55 18.9993 11.127 18.8213 10.811 18.4993L1.02502 8.50227L1.97502 7.57227L11.76 17.5683C11.89 17.6993 12.109 17.7003 12.24 17.5673L22.024 7.57227L22.975 8.50227L13.19 18.4983C12.873 18.8223 12.45 18.9993 12 18.9993Z" fill="currentColor"/></svg>
+        </button>
+        <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1" hidden>
+          <p class="faq-answer-copy">The prices at the various charging stations can vary greatly.</p>
+            <p class="faq-answer-copy">You can use various charging apps to find out about the prices of the charging stations that are relevant to you.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
+          <span class="faq-question-label">Why are the prices at the charging stations so different?</span>
+          <svg class="faq-chevron" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 18.9993C11.55 18.9993 11.127 18.8213 10.811 18.4993L1.02502 8.50227L1.97502 7.57227L11.76 17.5683C11.89 17.6993 12.109 17.7003 12.24 17.5673L22.024 7.57227L22.975 8.50227L13.19 18.4983C12.873 18.8223 12.45 18.9993 12 18.9993Z" fill="currentColor"/></svg>
+        </button>
+        <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2" hidden>
+          <p class="faq-answer-copy">The prices at the different charging stations depend on many factors: charging provider, the output of the charger and location to name just a few.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
+          <span class="faq-question-label">How can I charge affordably at home?</span>
+          <svg class="faq-chevron" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 18.9993C11.55 18.9993 11.127 18.8213 10.811 18.4993L1.02502 8.50227L1.97502 7.57227L11.76 17.5683C11.89 17.6993 12.109 17.7003 12.24 17.5673L22.024 7.57227L22.975 8.50227L13.19 18.4983C12.873 18.8223 12.45 18.9993 12 18.9993Z" fill="currentColor"/></svg>
+        </button>
+        <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3" hidden>
+          <p class="faq-answer-copy">The costs for charging at home depends on your electricity tariff.</p>
+            <p class="faq-answer-copy">Many providers offer a beneficial rate for EV charging. You can find out more directly with your energy provider.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
+          <span class="faq-question-label">Why does charging on the motorway cost more?</span>
+          <svg class="faq-chevron" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 18.9993C11.55 18.9993 11.127 18.8213 10.811 18.4993L1.02502 8.50227L1.97502 7.57227L11.76 17.5683C11.89 17.6993 12.109 17.7003 12.24 17.5673L22.024 7.57227L22.975 8.50227L13.19 18.4983C12.873 18.8223 12.45 18.9993 12 18.9993Z" fill="currentColor"/></svg>
+        </button>
+        <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4" hidden>
+          <p class="faq-answer-copy">Fast charging stations on the motorway require a high level of technical effort to build and operate. These costs are then reflected in the sometimes higher price.</p>
+            <p class="faq-answer-copy">You may choose to subscribe to a charging card with low prices for fast charging if you want to regularly charge on the motorway.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </div><!-- /simulator -->
 </div><!-- /content -->
@@ -1111,6 +1203,19 @@ const consumptionLabels = {
   PoloStyle_37b:'23.2–21.2 kWh / 100 mi', PoloStyle_52a:'23.5–21.6 kWh / 100 mi',
   PoloGTI_52b:'24.6–22.4 kWh / 100 mi',
 };
+window.consumptionLabels = consumptionLabels;
+const wltpData = {
+  Trend_50: {
+    combined:      '14.1 – 14.0 kWh/100 km',
+    highway:       '18.9 – 18.7 kWh/100 km',
+    countryRoads:  '12.7 – 12.6 kWh/100 km',
+    outskirts:     '10.9 – 10.8 kWh/100 km',
+    cityCenter:    '10.1 – 9.9 kWh/100 km',
+    rangeCombined: '413 – 417 km',
+    rangeCity:     '545 – 553 km',
+  },
+};
+window.wltpData = wltpData;
 const batteryOptions = {
   Trend:     [{ v:'50',  l:'125 kW (170 PS) · 50 kWh' }],
   Life:      [{ v:'50',  l:'125 kW (170 PS) · 50 kWh' },{ v:'58', l:'140 kW (190 PS) · 58 kWh' },{ v:'79', l:'170 kW (231 PS) · 79 kWh' }],
@@ -1134,6 +1239,7 @@ const trimGroupLabels = {
   PoloTrend:'The new ID. Polo', PoloLife:'The new ID. Polo',
   PoloStyle:'The new ID. Polo', PoloGTI:'The new ID. Polo',
 };
+window.trimGroupLabels = trimGroupLabels;
 const trimNames = {
   Trend:'The new ID.3 Neo Trend', Life:'The new ID.3 Neo Life', Style:'The new ID.3 Neo Style',
   PoloTrend:'The new ID. Polo Trend', PoloLife:'The new ID. Polo Life',
@@ -1175,15 +1281,16 @@ function initDistSlider() {
     const centres = [pct1 / 2, (pct1 + pct2) / 2, (pct2 + 100) / 2];
     const widths  = [pct1, pct2 - pct1, 100 - pct2];
 
+    const trackWidthPx = block.getBoundingClientRect().width;
     icons.forEach((icon, i) => {
       if (!icon) return;
       icon.style.left = centres[i] + '%';
       const wPct = widths[i];
       const size = clamp(ICON_MIN + (ICON_MAX - ICON_MIN) * (wPct - 5) / 15, ICON_MIN, ICON_MAX);
-      const opacity = wPct < 4 ? 0 : Math.min(1, (wPct - 4) / 4);
+      const segmentWidthPx = trackWidthPx * wPct / 100;
       icon.style.width   = size + 'px';
       icon.style.height  = size + 'px';
-      icon.style.opacity = opacity;
+      icon.style.opacity = segmentWidthPx < size ? '0' : '1';
     });
 
     const v1 = Math.round(pct1), v2 = Math.round(pct2);
@@ -1456,8 +1563,7 @@ function onTrimChange() {
   if (groupEl) groupEl.textContent = trimGroupLabels[trim] || 'The new ID.3 Neo';
   const opts = batteryOptions[trim] || batteryOptions.Trend;
   const sel  = document.getElementById('battery-select');
-  sel.innerHTML = '<optgroup label="Motor / Battery Capacity">'
-    + opts.map(o => `<option value="${o.v}">${o.l}</option>`).join('') + '</optgroup>';
+  sel.innerHTML = opts.map(o => `<option value="${o.v}">${o.l}</option>`).join('');
   syncSelectDisabled(sel);
   const img = document.getElementById('car-img');
   if (img && carImages[trim]) img.src = carImages[trim];
@@ -1709,6 +1815,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   var triggers = Object.keys(MODAL_CONTENT)
     .map(function (id) { return document.getElementById(id); })
+    .concat([document.getElementById('tech-link-btn')])
     .filter(Boolean);
   if (!overlay || !triggers.length) return;
 
@@ -1733,6 +1840,39 @@ window.addEventListener('DOMContentLoaded', () => {
           ul.appendChild(li);
         });
         body.appendChild(ul);
+      } else if (block && block.subtitle !== undefined) {
+        var sub = document.createElement('p');
+        sub.className = 'info-modal-subtitle';
+        sub.textContent = block.subtitle;
+        body.appendChild(sub);
+      } else if (block && block.link) {
+        var linkRow = document.createElement('div');
+        linkRow.className = 'info-modal-link-row';
+        var a = document.createElement('a');
+        a.href = block.link.href || '#';
+        a.textContent = block.link.text;
+        linkRow.appendChild(a);
+        body.appendChild(linkRow);
+      } else if (block && block.sectionHeader !== undefined) {
+        var header = document.createElement('p');
+        header.className = 'info-modal-section-header';
+        header.textContent = block.sectionHeader;
+        body.appendChild(header);
+      } else if (block && block.rows) {
+        var dl = document.createElement('dl');
+        dl.className = 'info-modal-rows';
+        block.rows.forEach(function (row) {
+          var rowEl = document.createElement('div');
+          rowEl.className = 'info-modal-row';
+          var dt = document.createElement('dt');
+          dt.textContent = row.label;
+          var dd = document.createElement('dd');
+          dd.textContent = row.value;
+          rowEl.appendChild(dt);
+          rowEl.appendChild(dd);
+          dl.appendChild(rowEl);
+        });
+        body.appendChild(dl);
       } else {
         var p = document.createElement('p');
         p.textContent = block;
@@ -1743,9 +1883,37 @@ window.addEventListener('DOMContentLoaded', () => {
 
   var focusAnchor = null;
 
+  function getTechDataModalContent() {
+    var trim = document.getElementById('trim-select')?.value ?? 'Trend';
+    var batt = document.getElementById('battery-select')?.value ?? '50';
+    var data = (typeof wltpData !== 'undefined' && wltpData[trim + '_' + batt]) || {};
+    return {
+      title: 'Emissions and consumption',
+      body: [
+        { rows: [
+          { label: 'Hub/Motor',          value: batt + ' kWh' },
+          { label: 'Equipment version',  value: trim.toLowerCase() },
+        ] },
+        { rows: [
+          { label: 'CO₂ emissions combined ①',                       value: '0 g/km' },
+          { label: 'Combined fuel consumption ①',                     value: data.combined      || '–' },
+          { label: 'Highway fuel consumption ①',                      value: data.highway       || '–' },
+          { label: 'Fuel consumption on country roads ①',             value: data.countryRoads  || '–' },
+          { label: 'Consumption on the outskirts of the city ①',      value: data.outskirts     || '–' },
+          { label: 'Consumption in the city center ①',                value: data.cityCenter    || '–' },
+          { label: 'Electric range combined ②',                       value: data.rangeCombined || '–' },
+          { label: 'Electric range city ②',                           value: data.rangeCity     || '–' },
+          { label: 'CO₂ class ①',                                     value: 'A' },
+        ] },
+        { link: { text: 'More about WLTP and emission standards', href: '#' } },
+        { sectionHeader: 'Electricity' },
+      ]
+    };
+  }
+
   function openInfoModal(trigger) {
     lastTrigger = trigger;
-    var content = MODAL_CONTENT[trigger.id] || { title: '', body: [] };
+    var content = trigger.id === 'tech-link-btn' ? getTechDataModalContent() : (MODAL_CONTENT[trigger.id] || { title: '', body: [] });
     title.textContent = content.title;
     renderBody(content.body);
 
@@ -1796,6 +1964,34 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape' && modalIsOpen) closeInfoModal();
   });
 })();
+</script>
+<script>
+  var FAQ_CHEVRON_DOWN = 'M12 18.9993C11.55 18.9993 11.127 18.8213 10.811 18.4993L1.02502 8.50227L1.97502 7.57227L11.76 17.5683C11.89 17.6993 12.109 17.7003 12.24 17.5673L22.024 7.57227L22.975 8.50227L13.19 18.4983C12.873 18.8223 12.45 18.9993 12 18.9993Z';
+  var FAQ_CHEVRON_UP = 'M12 5.00073C11.55 5.00073 11.127 5.17873 10.811 5.50073L1.02502 15.4977L1.97502 16.4277L11.76 6.43173C11.89 6.30073 12.109 6.29973 12.24 6.43273L22.024 16.4277L22.975 15.4977L13.19 5.50173C12.873 5.17773 12.45 5.00073 12 5.00073Z';
+  function setFaqChevron(btn, expanded) {
+    var path = btn.querySelector('.faq-chevron path');
+    if (path) path.setAttribute('d', expanded ? FAQ_CHEVRON_UP : FAQ_CHEVRON_DOWN);
+  }
+  document.querySelectorAll('.faq-list').forEach(function (list) {
+    var questions = list.querySelectorAll('.faq-question');
+    questions.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var expanded = btn.getAttribute('aria-expanded') === 'true';
+        questions.forEach(function (other) {
+          other.setAttribute('aria-expanded', 'false');
+          setFaqChevron(other, false);
+          var otherAnswer = document.getElementById(other.getAttribute('aria-controls'));
+          if (otherAnswer) otherAnswer.hidden = true;
+        });
+        if (!expanded) {
+          btn.setAttribute('aria-expanded', 'true');
+          setFaqChevron(btn, true);
+          var answer = document.getElementById(btn.getAttribute('aria-controls'));
+          if (answer) answer.hidden = false;
+        }
+      });
+    });
+  });
 </script>
 </body>
 </html>
