@@ -1618,11 +1618,37 @@ function buildCostSlots(container, pounds) {
   });
 }
 
+// Averages the numbers in a WLTP range string ("18.9 – 18.7 kWh/100 km") into
+// a single kWh/100km figure; returns null if the string is missing/unparsable.
+function parseWltpKwh(str) {
+  const nums = str && str.match(/[\d.]+/g);
+  if (!nums || !nums.length) return null;
+  return nums.reduce((a, b) => a + Number(b), 0) / nums.length;
+}
+
 function updateCost() {
   const trim = document.getElementById('trim-select').value;
   const batt = document.getElementById('battery-select').value;
   const key  = trim + '_' + batt;
-  const consumption = consumptionKWh[key] || 22.6;
+
+  // Blend the vehicle's real per-road-type WLTP consumption by the Q1
+  // City/Country road/Motorway split, instead of a single flat figure —
+  // getDistWeights() exists for exactly this but was never wired in, so
+  // dragging Q1 updated its own labels/ARIA but never touched the result.
+  const data = (typeof wltpData !== 'undefined' && wltpData[key]) || {};
+  const cityKwh      = parseWltpKwh(data.cityCenter);
+  const countryKwh   = parseWltpKwh(data.countryRoads);
+  const motorwayKwh  = parseWltpKwh(data.highway);
+  const [wCity, wCountry, wMotorway] = getDistWeights();
+
+  let consumption; // kWh/100mi, matching consumptionKWh's unit
+  if (cityKwh != null && countryKwh != null && motorwayKwh != null) {
+    const blendedKwh100km = cityKwh * wCity + countryKwh * wCountry + motorwayKwh * wMotorway;
+    consumption = blendedKwh100km * 1.60934;
+  } else {
+    consumption = consumptionKWh[key] || 22.6;
+  }
+
   const annualMiles = parseFloat(document.getElementById('miles-slider').value) || 10000;
   const annualKWh   = annualMiles * consumption / 100;
 
