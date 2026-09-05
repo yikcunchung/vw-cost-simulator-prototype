@@ -110,6 +110,11 @@ body { font-family:var(--font-text); background:var(--bg); color:var(--navy); -w
 .dist-block { border:1px solid rgba(110,116,126,1); border-radius:12px; overflow:visible; position:relative; width:100%; height:80px; }
 .dist-icon { position:absolute; top:50%; display:flex; align-items:center; justify-content:center; transform:translate(-50%,-50%); overflow:hidden; pointer-events:none; }
 .dist-icon img { width:100%; height:100%; display:block; }
+/* Clips the dashed dividers to the block's own rounded corners — a divider
+   dragged to 0%/100% would otherwise poke its straight line out past the
+   curve, since .dist-block itself stays overflow:visible (it needs that for
+   the thumbs, which are centred ON its top/bottom edge and hang half outside). */
+.dist-divider-clip { position:absolute; inset:0; border-radius:12px; overflow:hidden; pointer-events:none; }
 .dist-divider { position:absolute; top:0; bottom:0; width:2px; border-left:2px dashed rgba(110,116,126,1); transform:translateX(-1px); pointer-events:none; z-index:1; }
 .dist-thumb { position:absolute; display:flex; box-sizing:border-box; align-items:center; justify-content:center; width:28px; height:28px; border-radius:100%; border:2px solid rgb(41,48,67); background-color:rgb(41,48,67); color:rgb(255,255,255); z-index:1; cursor:grab; user-select:none; touch-action:none; pointer-events:auto; padding:0; outline:none; }
 .dist-thumb:hover { background-color:#997F67; border-color:#997F67; }
@@ -700,8 +705,10 @@ input[aria-invalid="true"] { border-color:#8A1B1B !important; }
         </div>
         <div class="dist-wrap">
           <div class="dist-block" id="dist-block">
-            <div class="dist-divider" id="dist-divider-1" style="left:33.33%;"></div>
-            <div class="dist-divider" id="dist-divider-2" style="left:66.66%;"></div>
+            <div class="dist-divider-clip">
+              <div class="dist-divider" id="dist-divider-1" style="left:33.33%;"></div>
+              <div class="dist-divider" id="dist-divider-2" style="left:66.66%;"></div>
+            </div>
             <button class="dist-thumb" id="dist-thumb-1" role="slider" aria-label="City / Country road split"
                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="33" style="left:33.33%; top:0; transform:translate(-50%,-50%);">
               <svg aria-hidden="true" width="12" height="12" viewBox="6 6 12 12" fill="none"><path d="M15.72 9.09L14.73 10L15.93 11.35H8.12L9.32 10L8.32 9.11C6.06 11.61 6.06 11.71 6.06 12C6.06 12.29 6.06 12.4 8.33 14.91L9.33 14.02L8.12 12.67H15.93L14.73 14L15.73 14.89C17.99 12.4 17.99 12.3 17.99 12C17.99 11.7 17.99 11.61 15.72 9.09Z" fill="white"/></svg>
