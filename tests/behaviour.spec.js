@@ -120,7 +120,9 @@ const ORDER_DESKTOP = [
   'step-thumb-motorway', 'price-motorway-d', 'button.edit-icon-btn',
   'button.reset-link', 'info-btn-fuel',
   'price-petrol', 'button.edit-icon-btn', 'price-diesel', 'button.edit-icon-btn',
-  'trim-select', 'battery-select', 'info-btn-cost', 'button.cta-button',
+  'trim-select', 'battery-select', 'tech-link-btn', 'a.ref-badge-wrapper',
+  'info-btn-cost', 'button.cta-button',
+  'faq-question-1', 'faq-question-2', 'faq-question-3', 'faq-question-4',
 ];
 const ORDER_MOBILE = [
   'a.skip-link', 'info-btn-distance', 'dist-thumb-1', 'dist-thumb-2', 'info-btn-miles',
@@ -131,7 +133,9 @@ const ORDER_MOBILE = [
   'price-motorway-m', 'button.edit-icon-btn', 'step-thumb-motorway-m',
   'button.reset-link', 'info-btn-fuel',
   'price-petrol', 'button.edit-icon-btn', 'price-diesel', 'button.edit-icon-btn',
-  'trim-select', 'battery-select', 'info-btn-cost', 'button.cta-button',
+  'trim-select', 'battery-select', 'tech-link-btn', 'a.ref-badge-wrapper',
+  'info-btn-cost', 'button.cta-button',
+  'faq-question-1', 'faq-question-2', 'faq-question-3', 'faq-question-4',
 ];
 const expectedOrder = (page) =>
   page.viewportSize().width >= 960 ? ORDER_DESKTOP : ORDER_MOBILE;

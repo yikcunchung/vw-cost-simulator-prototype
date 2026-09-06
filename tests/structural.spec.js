@@ -140,7 +140,7 @@ test('visible interactive controls have unique accessible names', async ({ page 
     });
   }, [VISIBLE_FN, FOCUSABLE_SELECTOR]);
 
-  expect(names.length, 'expected the full visible control set').toBe(29);
+  expect(names.length, 'expected the full visible control set').toBe(35);
   const dupes = names.filter((n, i) => names.indexOf(n) !== i);
   expect(dupes, `duplicate accessible names among visible controls: ${JSON.stringify(names)}`)
     .toEqual([]);
