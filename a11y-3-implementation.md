@@ -1,11 +1,11 @@
 # A11y 3 of 3 — What to build
 
-**App:** VW Cost Simulator (`cost-simulator`). **Target:** production vw.com — AEM + React SPA Editor +
-styled-components.
+**App:** VW Cost Simulator (`cost-simulator`). **Target:** production vw.com — AEM + React SPA
+Editor + styled-components.
 **Companions:** `a11y-1-criteria.md` (every criterion, pass/fail) ·
-`a11y-2-automated-testing.md` (what the tools can and cannot prove).
+`a11y-2-automated-testing.md` (what the tools can/can't prove).
 
-**Scope:** the whole page. This app is standalone — there is no component-versus-page split.
+**Scope:** the whole page — standalone, no component/page split.
 
 > **Do not copy the reference build.** It is vanilla HTML/JS and it is a *behavioural
 > specification*, not source to port. A meaningful share of the required behaviour lives in
@@ -16,17 +16,16 @@ styled-components.
 ## Start here — the defect that shipped, and that no tool caught
 
 **9 decorative inline `<svg>`s were exposed as unnamed graphics — axe (98 rules), WAVE and Nu all
-scored 0 errors.** Only the accessibility tree caught it. Cause: Chrome maps a bare `<svg>` to
-`role=image`, `name=""`; `svg-img-alt`/`role-img-alt` are `inapplicable` with no `role`, and
-`image-alt` only checks `<img>`.
+scored 0 errors.** Only the AX tree caught it. Cause: Chrome maps a bare `<svg>` to `role=image`,
+`name=""`; `svg-img-alt`/`role-img-alt` are `inapplicable` with no `role`, `image-alt` only checks
+`<img>`.
 
-**Fixed with `aria-hidden="true"`** — the pattern already existed on every `.q-icon` SVG; these 9
-were just missed. SC 1.1.1 is the rule; the Definition of Done's accessibility-tree assertion is
-what keeps it fixed.
+**Fixed with `aria-hidden="true"`** — already the pattern on every `.q-icon` SVG; these 9 were just
+missed. SC 1.1.1 is the rule; the DoD's AX-tree assertion keeps it fixed.
 
 Two more invisible naming defects shipped alongside: `#car-img` had `alt="Volkswagen"` (present,
-not descriptive) and four `aria-label`s read "Public **charging charging** price". **A name being
-present and unique doesn't make it correct.**
+not descriptive), four `aria-label`s read "Public **charging charging** price". **Present and
+unique doesn't make a name correct.**
 
 ---
 # 1. Semantics and naming
@@ -68,8 +67,8 @@ export const Icon = ({ label, ...p }) =>
 **Level A**
 
 If a control's only content is an icon, the control carries `aria-label`; the icon inside it is
-`aria-hidden`. Never name the icon and leave the button unnamed — the name must sit on the thing
-that is focusable.
+`aria-hidden`. Never name the icon and leave the button unnamed — the name sits on the focusable
+thing.
 
 ---
 
@@ -77,11 +76,11 @@ that is focusable.
 
 **Level A**
 
-Use `aria-labelledby` pointing at the visible label element. Do not retype the label into an
-`aria-label` — that is how the visible text and the name drift apart (see SC 2.5.3 above).
+Use `aria-labelledby` pointing at the visible label element. Don't retype the label into an
+`aria-label` — that's how visible text and name drift apart (see SC 2.5.3 above).
 
-**Trap:** a `<select>`'s `<option>` text is **not** its label. An audit that compares concatenated
-option text against the accessible name will manufacture failures that do not exist.
+**Trap:** a `<select>`'s `<option>` text is **not** its label. Comparing concatenated option text
+against the accessible name manufactures failures that don't exist.
 
 ---
 
@@ -90,7 +89,7 @@ option text against the accessible name will manufacture failures that do not ex
 **Level A**
 
 If a control has a visible text label, the accessible name must **contain that text, contiguously**
-— otherwise a speech-input user cannot activate it by saying what they see.
+— otherwise a speech-input user can't activate it by saying what they see.
 
 ```jsx
 // ✗ visible "Motor / Battery Capacity", name "Motor and battery capacity"
@@ -107,8 +106,8 @@ If a control has a visible text label, the accessible name must **contain that t
 
 **Level A / AA**
 
-One `h1`; heading levels descend without gaps; `role="banner"` on the topbar and a `<main>`; and a
-skip link as the **first** tab stop, pointing at an id that exists.
+One `h1`; heading levels descend without gaps; `role="banner"` on the topbar, a `<main>`; skip link
+as the **first** tab stop, pointing at an id that exists.
 
 ---
 
@@ -120,12 +119,12 @@ skip link as the **first** tab stop, pointing at an id that exists.
 <p id="cost-live" class="sr-only" aria-live="polite"></p>
 ```
 
-The region must already be in the DOM at load — injecting it and writing to it in the same tick is
-not announced. Write to it from **every** path that changes the result, not just the common one.
+The region must already be in the DOM at load — injecting and writing to it in the same tick isn't
+announced. Write from **every** path that changes the result, not just the common one.
 
 > **Keep the `.sr-only` clip.** `position:absolute; width:1px; height:1px; clip:rect(0,0,0,0);
-> clip-path:inset(50%); white-space:nowrap`. Set an explicit `color` on it — a clipped region that
-> inherits a matching colour reads as a 1:1 contrast error to WAVE even though nothing renders.
+> clip-path:inset(50%); white-space:nowrap`. Set an explicit `color` — a clipped region inheriting
+> a matching colour reads as a 1:1 contrast error to WAVE even though nothing renders.
 
 ---
 
@@ -133,8 +132,8 @@ not announced. Write to it from **every** path that changes the result, not just
 
 **Level A / AA**
 
-`<html lang="en">`. If a CMS field can hold a string in another language, the component rendering it
-must be able to emit `lang` alongside it.
+`<html lang="en">`. If a CMS field can hold a string in another language, the rendering component
+must emit `lang` alongside it.
 
 ---
 # 2. Keyboard and focus
@@ -143,8 +142,8 @@ must be able to emit `lang` alongside it.
 
 **Level A**
 
-Every custom control — anything that is not a native `<button>`, `<a>`, `<select>` or `<input>` —
-needs an explicit key handler. Assert the **state change**, not just that the handler fired.
+Every custom control — anything not a native `<button>`, `<a>`, `<select>`, `<input>` — needs an
+explicit key handler. Assert the **state change**, not just that the handler fired.
 
 ---
 
@@ -152,8 +151,8 @@ needs an explicit key handler. Assert the **state change**, not just that the ha
 
 **Level A**
 
-A slider built from a `<div>` needs the full contract, and the value must be written from every
-path that can change it — keyboard, drag, and click-on-track:
+A slider built from a `<div>` needs the full contract, value written from every path that can
+change it — keyboard, drag, click-on-track:
 
 ```html
 <div role="slider" tabindex="0"
@@ -163,22 +162,22 @@ path that can change it — keyboard, drag, and click-on-track:
 ```
 
 **Derive the ARIA from state, never set it imperatively in one branch only.** In React:
-`aria-valuenow={value}`, so desync is impossible.
+`aria-valuenow={value}` — desync becomes impossible.
 
 > **CDP caveat, not a defect:** `Accessibility.getPartialAXTree` reports `valuetext: ""` for every
-> ARIA widget even when `aria-valuetext` is set — not measurable over CDP, needs a real screen
-> reader. Don't read the empty string as a failure.
+> ARIA widget even when `aria-valuetext` is set — not measurable over CDP, needs a real reader.
+> Don't read the empty string as a failure.
 
 > **Fixed `dist-thumb-1`/`dist-thumb-2` to announce both segments, not one.** Each `aria-valuetext`
-> originally spoke only its own side (e.g. "33% city"); now both neighbours: `dist-thumb-1` "33%
-> City, 34% Country road", `dist-thumb-2` "34% Country road, 33% Motorway". `aria-label`s aligned to
-> range-simulator's wording. Found via manual VoiceOver — axe/WAVE only check non-empty, not useful.
+> originally spoke only its own side ("33% city"); now both neighbours: `dist-thumb-1` "33% City,
+> 34% Country road", `dist-thumb-2` "34% Country road, 33% Motorway", `aria-label`s aligned to
+> range-simulator's wording. Found via manual VoiceOver — axe/WAVE only check non-empty.
 
 > **Fixed: min/max must reflect the actually-reachable range, not the widget's theoretical one.**
 > Both thumbs statically advertised `aria-valuemin="0" aria-valuemax="100"` though JS clamps them
 > from crossing each other — thumb1's real ceiling at rest (33/67) is 67, not 100. Found via
-> production DOM comparison (`aria-valuemax="65"`), not any tool. Fixed by updating each thumb's
-> max/min to the other's live position in `setPositions()`:
+> production DOM comparison (`aria-valuemax="65"`), fixed by updating each thumb's max/min to the
+> other's live position in `setPositions()`:
 > ```js
 > thumb1.setAttribute('aria-valuemax', String(v2));
 > thumb2.setAttribute('aria-valuemin', String(v1));
@@ -190,9 +189,8 @@ path that can change it — keyboard, drag, and click-on-track:
 
 **Level A**
 
-Drive real `Tab` and assert `document.activeElement` at each stop. Responsive layouts are where this
-breaks: a control that moves visually at a breakpoint must move in the DOM too, not be repositioned
-with CSS `order`.
+Drive real `Tab`, assert `document.activeElement` at each stop. Responsive layouts are where this
+breaks: a control moving visually at a breakpoint must move in the DOM too, not via CSS `order`.
 
 ---
 
@@ -200,9 +198,9 @@ with CSS `order`.
 
 **Level AA**
 
-`outline: 2px solid var(--navy-dark); outline-offset: 3px`. Apply it to **every** focusable thing
-including skip links and inline links — a control that falls back to the browser's default ring
-still passes, but it is a visible inconsistency and the first thing an auditor notices.
+`outline: 2px solid var(--navy-dark); outline-offset: 3px`. Apply to **every** focusable thing
+incl. skip/inline links — a browser-default fallback ring still passes, but is a visible
+inconsistency an auditor notices first.
 
 **Never remove an outline without replacing it.** If the real control is a visually hidden
 `<input>` behind a styled surrogate, style the ring on the surrogate:
@@ -218,8 +216,8 @@ still passes, but it is a visible inconsistency and the first thing an auditor n
 **Level AA**
 
 Use `scroll-padding-top`/`scroll-padding-bottom` equal to the fixed-bar heights, or a `focusin`
-handler that scrolls the control clear. Verify **after the scroll settles** — a synchronous read
-right after `.focus()` catches mid-flight smooth-scroll and false-fails.
+handler that scrolls the control clear. Verify **after the scroll settles** — reading right after
+`.focus()` catches mid-flight smooth-scroll and false-fails.
 
 ---
 
@@ -235,12 +233,12 @@ Tab must cycle through every stop and out the other side. Any disclosure or pane
 
 **Level A** (ACT rule `0ssw9k`)
 
-A region that scrolls must be focusable so a keyboard user can scroll it: `tabindex="0"` plus
-`role="group"` and an accessible name.
+A region that scrolls must be focusable so a keyboard user can scroll it: `tabindex="0"` +
+`role="group"` + an accessible name.
 
 > **Two rules disagree here, by construction.** axe's experimental `focus-order-semantics` flags
-> `tabindex="0"` on a `role="group"` as a defect. It is tagged `best-practice` + `experimental`,
-> carries **no `wcag2*` tag**, and maps to no WCAG criterion. **Keep the `tabindex`** — 2.1.1 wins.
+> `tabindex="0"` on a `role="group"` as a defect — tagged `best-practice` + `experimental`, no
+> `wcag2*` tag, maps to no WCAG criterion. **Keep the `tabindex`** — 2.1.1 wins.
 
 ---
 # 3. Pointer and targets
@@ -251,11 +249,11 @@ A region that scrolls must be focusable so a keyboard user can scroll it: `tabin
 
 > **axe won't catch this** — `target-size` is `enabled:false` by default in axe-core 4.13.0; a
 > stock run reports "0 violations" without testing it. Turn on:
-> `axe.run(el, { rules: { 'target-size': { enabled: true } } })`.
+> `axe.run(el, { rules: { 'target-size': { enabled: true } } })`
 
 A visually small control can still be a compliant target if a transparent `::before` enlarges the
-**hit area** — and that is a legitimate technique, not a loophole. WCAG defines a target as "the
-region of the display that will accept a pointer action":
+**hit area** — a legitimate technique, not a loophole. WCAG defines a target as "the region of the
+display that will accept a pointer action":
 
 ```css
 .thumb { width: 18px; height: 18px; }
@@ -266,19 +264,19 @@ region of the display that will accept a pointer action":
 }
 ```
 
-**Prove it, do not assume it.** Ray-cast `document.elementFromPoint` outward from the centre in
-0.5px steps and confirm the hit region really is ≥24×24 — and that a real drag *starts* from the
+**Prove it, don't assume it.** Ray-cast `document.elementFromPoint` outward from the centre in
+0.5px steps, confirm the hit region really is ≥24×24 — and that a real drag *starts* from the
 enlarged area, not just a hit-test.
 
-**If a target genuinely is undersized**, the spacing exception is the fallback, and the test depends
-on the neighbour:
+**If a target genuinely is undersized**, the spacing exception is the fallback — test depends on
+the neighbour:
 
 - against a **full-size** neighbour: a 24px-diameter circle centred on the undersized target must
   not intersect the neighbour's **box** — i.e. **≥12px from centre to box edge**
 - against **another undersized** target: **≥24px centre-to-centre**
 
-Using centre-to-centre against a full-size neighbour is the wrong test and gives a falsely
-comfortable number.
+Centre-to-centre against a full-size neighbour is the wrong test — gives a falsely comfortable
+number.
 
 ---
 
@@ -287,7 +285,7 @@ comfortable number.
 **Level A**
 
 Native `<button>` gets this free. A custom control must fire on `pointerup`/`click`, never
-`pointerdown`, so a user can drag off to abort.
+`pointerdown` — so a user can drag off to abort.
 
 ---
 
@@ -296,10 +294,9 @@ Native `<button>` gets this free. A custom control must fire on `pointerup`/`cli
 **Level AA**
 
 **Requires a single-pointer, no-drag way to set the value** — a `click`/`tap` handler on the track
-that jumps the thumb straight to position. Arrow keys don't satisfy this SC (2.1.1 and 2.5.7 are
-evaluated independently, per the W3C Understanding note), since touchscreen users may have no
-keyboard. Native `<input type="range">` gets this free; a custom `role="slider"` must implement
-track-click explicitly.
+that jumps the thumb straight to position. Arrow keys don't satisfy this SC (2.1.1/2.5.7 evaluated
+independently, per the W3C Understanding note) since touchscreen users may have no keyboard. Native
+`<input type="range">` gets this free; a custom `role="slider"` must implement track-click.
 
 ---
 # 4. Visual
@@ -308,16 +305,16 @@ track-click explicitly.
 
 **Level AA**
 
-Over a gradient, an image, or an overlapping element, axe returns **`incomplete`**, not a pass.
-Those must be resolved by hand, on real pixels.
+Over a gradient, image, or overlapping element, axe returns **`incomplete`**, not a pass — resolve
+by hand, on real pixels.
 
 **How to measure without producing a false result:**
 
-- `clip` is **document-absolute**, `getBoundingClientRect()` is **viewport-relative** — mixing
-  them gives exactly `1.00:1`, meaning the crop missed.
-- Crop to the **glyph band** (`Range.getClientRects()` union) to exclude the element's own border.
-- Take the **dominant** background colour, not the worst minority — at 12px the glyph core is under
-  1% of the crop.
+- `clip` is **document-absolute**, `getBoundingClientRect()` is **viewport-relative** — mixing them
+  gives exactly `1.00:1` (crop missed).
+- Crop to the **glyph band** (`Range.getClientRects()` union), excluding the element's own border.
+- Take the **dominant** background colour, not worst minority — at 12px the glyph core is <1% of
+  the crop.
 
 ---
 
@@ -337,7 +334,7 @@ Control boundaries, focus rings and selected-state indicators.
 `dsf 1` is a small screen — a different test.
 
 Content may scroll in **one** direction only. A horizontal carousel inside a bounded, keyboard-
-operable region is the permitted two-dimensional exception; page-level horizontal scroll is not.
+operable region is the permitted exception; page-level horizontal scroll is not.
 
 Sufficient techniques: **C31** (flexbox), **C32** (media queries + grid), **C34** (un-fix sticky).
 
@@ -352,15 +349,15 @@ Sufficient techniques: **C31** (flexbox), **C32** (media queries + grid), **C34*
 p { margin-bottom:2em !important; }
 ```
 
-Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
+Nothing may newly clip, no control lost, no horizontal scroll.
 
 > **Build target sizes out of `padding`, not `line-height`** — this SC overrides `line-height`, so
-> a line-height-based 24px target collapses under the very override being tested. Padding is
+> a line-height-based 24px target collapses under the very override being tested; padding is
 > unaffected.
 
 > **Fix the width first, not just the recovery path.** `.select-group` stacks selects vertically,
-> unconditionally, giving each floating label the full row width everywhere — zero clipping
-> verified at every width.
+> unconditionally, giving each floating label the full row width everywhere — zero clipping at
+> every width.
 >
 > Secondary safeguard: wrap `<option>`s in a matching `<optgroup label="…">` so opening the select
 > reveals the text in full:
@@ -371,9 +368,8 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 >   </optgroup>
 > </select>
 > ```
-> Apply in **every** place that rebuilds the select's `innerHTML` — a static fix alone is undone
-> on rebuild. The optgroup is a safety net, not the primary fix: a label with neither has no
-> escape.
+> Apply everywhere that rebuilds the select's `innerHTML` — a static fix alone is undone on
+> rebuild. The optgroup is a safety net, not the primary fix: neither present means no escape.
 
 ---
 
@@ -381,45 +377,44 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 
 **Level AA**
 
-No `@media (orientation:)` rule that hides or restricts content.
+No `@media (orientation:)` rule hides or restricts content.
 
 ---
 # 5. React, styled-components and AEM — the ones that bite
 
-1. **`styled-components` drops unknown props.** `aria-*` and `role` pass through on DOM elements but
-   **not** through a custom component unless you forward them. Spread `{...rest}` onto the DOM node.
+1. **`styled-components` drops unknown props.** `aria-*`/`role` pass through on DOM elements but
+   **not** through a custom component unless forwarded. Spread `{...rest}` onto the DOM node.
 2. **AEM `EditableComponent` injects a wrapper `<div>`.** Anything relying on a parent-child ARIA
-   relationship (a `radiogroup` owning its radios, `aria-labelledby` across a boundary) breaks when
-   each child becomes separately authorable. Keep such a group as **one** component, or wire
-   `aria-owns` explicitly.
-3. **Conditional rendering destroys focus.** Unmounting a panel while focus is inside drops focus to
-   `<body>`. Return focus to the opener explicitly.
-4. **`useId()` for every label association** — hand-written ids collide once a component is placed
-   twice on a page, and `duplicate-id-aria` is a real failure.
-5. **A CSS-in-JS `:focus-visible` must survive minification.** Verify the ring in the built bundle,
-   not just in dev.
-6. **Icons: name or hide at the component boundary** (SC 1.1.1). A per-call-site decision will be missed.
-7. **Live regions must mount before they are written to.** Render the region unconditionally; write
-   into it on update.
+   relationship (`radiogroup` owning its radios, `aria-labelledby` across a boundary) breaks once
+   each child is separately authorable. Keep the group as **one** component, or wire `aria-owns`.
+3. **Conditional rendering destroys focus.** Unmounting a panel while focus is inside drops focus
+   to `<body>` — return focus to the opener explicitly.
+4. **`useId()` for every label association** — hand-written ids collide once placed twice on a
+   page; `duplicate-id-aria` is a real failure.
+5. **A CSS-in-JS `:focus-visible` must survive minification** — verify the ring in the built
+   bundle, not just dev.
+6. **Icons: name or hide at the component boundary** (SC 1.1.1) — a per-call-site decision gets
+   missed.
+7. **Live regions must mount before they're written to.** Render unconditionally; write on update.
 
 ---
 
 # 6. Definition of Done
 
-- [ ] **axe with `target-size` explicitly enabled** — it is off by default, so without that line CI
-      passes SC 2.5.8 without ever testing it
-- [ ] **Accessibility tree asserted** — `0` unnamed `role=image` nodes, `0` unnamed interactive
-      nodes, every duplicate role+name pair reviewed
-- [ ] **Real keyboard run** — Tab / Shift+Tab / Enter / Space / Arrows / Escape, asserting
-      `document.activeElement` and the resulting state at each step
-- [ ] **All states, not just the default** — expand every disclosure, open every panel, select every
-      option, and re-run the checks after each
+- [ ] **axe with `target-size` explicitly enabled** — off by default, so without it CI passes SC
+      2.5.8 without ever testing it
+- [ ] **AX tree asserted** — `0` unnamed `role=image` nodes, `0` unnamed interactive nodes, every
+      duplicate role+name pair reviewed
+- [ ] **Real keyboard run** — Tab/Shift+Tab/Enter/Space/Arrows/Escape, asserting
+      `document.activeElement` and resulting state at each step
+- [ ] **All states, not just default** — expand every disclosure, open every panel, select every
+      option, re-run checks after each
 - [ ] **Reflow at 320×256 @ dsf 4** — nothing lost, no page-level horizontal scroll
-- [ ] **Contrast on composited pixels** wherever text sits over a gradient or imagery
-- [ ] **SC 2.5.3 by hand** — visible label contained in the accessible name. No tool does this
-- [ ] **Names are correct**, not merely present and unique — read each against what it describes
-- [ ] **Screen reader** — one pass with NVDA or VoiceOver. Not optional
-- [ ] **The suite fails when it should** — inject the defect and confirm the detector fires
+- [ ] **Contrast on composited pixels** wherever text sits over gradient/imagery
+- [ ] **SC 2.5.3 by hand** — visible label contained in the accessible name; no tool does this
+- [ ] **Names are correct**, not merely present/unique — read each against what it describes
+- [ ] **Screen reader** — one pass with NVDA or VoiceOver, not optional
+- [ ] **The suite fails when it should** — inject the defect, confirm the detector fires
 
 ---
 
@@ -438,31 +433,29 @@ No `@media (orientation:)` rule that hides or restricts content.
 
 Ray-casting `elementFromPoint` in 0.5px steps confirms 24.0×24.0, all four ±11 corners return the
 button. **Load-bearing:** removing `::before` as dead CSS isn't rescued by the spacing exception —
-the enclosing `div.step-track-wrap` has its own click handler, so centre-to-box distance is 0 (12px
-required).
+the enclosing `div.step-track-wrap` has its own click handler, so centre-to-box distance is 0
+(12px required).
 
 > **axe reaches the right verdict by the wrong route** — measures 18×18, fails on size, passes on
-> *offset* (its neighbour set excludes `div[click]`/`label`, missing the wrapper). Don't rely on
+> *offset* (neighbour set excludes `div[click]`/`label`, missing the wrapper). Don't rely on
 > `target-size` here; prove the hit area yourself.
 
-**`button.reset-link` is 20px tall and passes on the spacing exception**, with 30px clearance
-centre-to-box against a 12px requirement. That one *is* exception-dependent — give it 24px if the
-layout ever tightens.
+**`button.reset-link` is 20px tall, passes on the spacing exception** — 30px clearance centre-to-box
+vs 12px required. That one *is* exception-dependent — give it 24px if the layout ever tightens.
 
-**The 10 edit icons were re-architected from `<label for>` to real `<button>`s** — each now has a
-unique `aria-label` (e.g. "Edit home charging price"), icon `alt=""`, resolving the old
-six-identical-"Edit" ambiguity. Trade-off: raised Tab-stop count 22→29, since each button only
-refocuses an already-reachable field. Nothing requires reverting — worth a deliberate call (keep,
-or `tabindex="-1"` for pointer/touch-only).
+**The 10 edit icons were re-architected from `<label for>` to real `<button>`s** — each a unique
+`aria-label` (e.g. "Edit home charging price"), icon `alt=""`, resolving the old six-identical-
+"Edit" ambiguity. Trade-off: Tab-stop count 22→29, each only refocuses an already-reachable field —
+nothing requires reverting, but worth a deliberate call (keep, or `tabindex="-1"` for touch-only).
 
 **Error handling is already correct — keep it.** Out-of-range price sets `aria-invalid="true"`,
 links `.field-error` via `aria-describedby`, names the permitted range — SC 3.3.1/3.3.3, the only
-app in the suite that needs them.
+app in the suite needing them.
 
-**Fixed the weakest focus indicator on the page:** the number inputs signalled focus only via a
-**1.25:1** border-colour shift (`#6E747E`→`#997F67`); now use the same 2px outline as every other
+**Fixed the weakest focus indicator on the page:** number inputs signalled focus only via a
+**1.25:1** border-colour shift (`#6E747E`→`#997F67`); now the same 2px outline as every other
 control. Apply at the *design-system* level when porting, or this recurs.
 
 **Contrast: 56 nodes go `incomplete`, every one passes — worst ratio 6.19:1.** Cause:
-`linear-gradient` on `.input-section` plus `span.slot-reel` digit-roller overlap. Expect the same
-noise in the port; not a defect.
+`linear-gradient` on `.input-section` + `span.slot-reel` digit-roller overlap — expect the same
+noise in the port, not a defect.
