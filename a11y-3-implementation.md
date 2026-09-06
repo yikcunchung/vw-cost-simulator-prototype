@@ -15,22 +15,18 @@ styled-components.
 
 ## Start here — the defect that shipped, and that no tool caught
 
-**9 decorative inline `<svg>`s were exposed to assistive technology as unnamed graphics**, and
-**not one tool in the required toolchain saw them.** axe reported 0 violations at 98 rules. WAVE
-reported 0 errors. Nu reported 0 errors. The accessibility tree was the only thing that caught it.
+**9 decorative inline `<svg>`s were exposed as unnamed graphics — axe (98 rules), WAVE and Nu all
+scored 0 errors.** Only the accessibility tree caught it. Cause: Chrome maps a bare `<svg>` to
+`role=image`, `name=""`; `svg-img-alt`/`role-img-alt` are `inapplicable` with no `role`, and
+`image-alt` only checks `<img>`.
 
-Chrome maps a bare `<svg>` to `role=image`, `name=""`, `ignored=false` — it is **not** decorative by
-default. `svg-img-alt` and `role-img-alt` are both **inapplicable** to an `<svg>` with no `role`
-attribute, and `image-alt` only inspects `<img>`, so the whole class is invisible to scanners.
+**Fixed with `aria-hidden="true"`** — the pattern already existed on every `.q-icon` SVG; these 9
+were just missed. SC 1.1.1 is the rule; the Definition of Done's accessibility-tree assertion is
+what keeps it fixed.
 
-Fixed with `aria-hidden="true"`. **SC 1.1.1 is the rule; the accessibility-tree assertion in the
-Definition of Done is the check that keeps it fixed.** The pattern was already understood in this
-codebase — every `.q-icon` SVG carried `aria-hidden="true"` already. These 9 were simply missed.
-
-Two further naming defects shipped alongside them, both also invisible to every tool: `#car-img`
-carried `alt="Volkswagen"` — a name that is *present but does not describe the image*, and
-inconsistent with the sibling simulators — and four `aria-label`s read "Public **charging charging**
-price". **A name being present and unique does not make it correct.**
+Two more invisible naming defects shipped alongside: `#car-img` had `alt="Volkswagen"` (present,
+not descriptive) and four `aria-label`s read "Public **charging charging** price". **A name being
+present and unique doesn't make it correct.**
 
 ---
 # 1. Semantics and naming
@@ -53,10 +49,9 @@ assistive technology as an unnamed graphic** — it is not "decorative by defaul
 <svg role="img" aria-label="Volkswagen" width="32" height="32">…</svg>
 ```
 
-> **No scanner catches this.** `svg-img-alt` and `role-img-alt` are **inapplicable** to an `<svg>`
-> with no `role`; `image-alt` only inspects `<img>`. axe, WAVE and Nu all returned clean on pages
-> carrying up to 16 of these. **The accessibility tree is the only check that works** — assert
-> `0` nodes with `role=image` that are unnamed and not `ignored`.
+> **No scanner catches this** — `svg-img-alt`/`role-img-alt` are `inapplicable` with no `role`;
+> `image-alt` only checks `<img>`. axe/WAVE/Nu all scored clean on pages with up to 16 of these.
+> **Assert `0` unnamed, non-`ignored` `role=image` nodes on the AX tree.**
 
 **In React:** put it in the icon component itself, so it cannot be forgotten per call site.
 
@@ -170,31 +165,20 @@ path that can change it — keyboard, drag, and click-on-track:
 **Derive the ARIA from state, never set it imperatively in one branch only.** In React:
 `aria-valuenow={value}`, so desync is impossible.
 
-> **A CDP caveat, not a defect:** `Accessibility.getPartialAXTree` reports `valuetext: ""` for
-> *every* ARIA widget, even when `aria-valuetext` is set. Whether it reaches the platform API is not
-> measurable over CDP — it needs a real screen reader. Do not read that empty string as a failure.
+> **CDP caveat, not a defect:** `Accessibility.getPartialAXTree` reports `valuetext: ""` for every
+> ARIA widget even when `aria-valuetext` is set — not measurable over CDP, needs a real screen
+> reader. Don't read the empty string as a failure.
 
-> **A boundary thumb's value should describe both segments it separates, not just one.** The
-> distance-distribution thumbs (`dist-thumb-1`/`dist-thumb-2`) are boundaries between three named
-> segments (City/Country road/Motorway); each thumb's `aria-valuetext` originally announced only its
-> own single segment (e.g. "33% city"), which tells a screen-reader user what one side is but not
-> what's being traded off against the other. Fixed to announce both neighbours' own widths, matching
-> range-simulator's identical component — `dist-thumb-1`: "33% City, 34% Country road",
-> `dist-thumb-2`: "34% Country road, 33% Motorway". Found via a manual VoiceOver pass, not any
-> automated tool — this class of "technically has a value, but not a useful one" defect is invisible
-> to axe/WAVE, which only check that `aria-valuetext` is non-empty and current, not that its content
-> actually helps. `aria-label`s were also aligned to range-simulator's wording: "City / Country road
-> split" / "Country road / Motorway split".
+> **Fixed `dist-thumb-1`/`dist-thumb-2` to announce both segments, not one.** Each `aria-valuetext`
+> originally spoke only its own side (e.g. "33% city"); now both neighbours: `dist-thumb-1` "33%
+> City, 34% Country road", `dist-thumb-2` "34% Country road, 33% Motorway". `aria-label`s aligned to
+> range-simulator's wording. Found via manual VoiceOver — axe/WAVE only check non-empty, not useful.
 
-> **A slider's exposed min/max must reflect the range it can actually reach, not the widget's
-> theoretical range.** Both distance-distribution thumbs statically advertised `aria-valuemin="0"
-> aria-valuemax="100"`, but neither can actually be dragged past the other (the JS clamps them so
-> they can't cross) — so at rest (33/67), thumb1's real ceiling is 67, not 100. Found by comparing
-> against the real production component's DOM directly (`aria-valuemax="65"` on its left handle when
-> the right handle sat at 65) — not something any of the automated tools or guided tests flagged.
-> Fixed by updating each thumb's `aria-valuemax`/`aria-valuemin` to the other thumb's live position
-> on every `setPositions()` call, the same place `aria-valuenow`/`aria-valuetext` are already kept
-> current:
+> **Fixed: min/max must reflect the actually-reachable range, not the widget's theoretical one.**
+> Both thumbs statically advertised `aria-valuemin="0" aria-valuemax="100"` though JS clamps them
+> from crossing each other — thumb1's real ceiling at rest (33/67) is 67, not 100. Found via
+> production DOM comparison (`aria-valuemax="65"`), not any tool. Fixed by updating each thumb's
+> max/min to the other's live position in `setPositions()`:
 > ```js
 > thumb1.setAttribute('aria-valuemax', String(v2));
 > thumb2.setAttribute('aria-valuemin', String(v1));
@@ -233,10 +217,9 @@ still passes, but it is a visible inconsistency and the first thing an auditor n
 
 **Level AA**
 
-Use `scroll-padding-top` / `scroll-padding-bottom` on the scroll container equal to the height of
-the fixed bars, or a `focusin` handler that scrolls the control clear. Verify by measuring the
-focused control's rect against the viewport **after the scroll settles** — a synchronous read right
-after `.focus()` catches a smooth scroll mid-flight and reports a false failure.
+Use `scroll-padding-top`/`scroll-padding-bottom` equal to the fixed-bar heights, or a `focusin`
+handler that scrolls the control clear. Verify **after the scroll settles** — a synchronous read
+right after `.focus()` catches mid-flight smooth-scroll and false-fails.
 
 ---
 
@@ -266,8 +249,8 @@ A region that scrolls must be focusable so a keyboard user can scroll it: `tabin
 
 **Level AA**
 
-> **axe will not catch this for you.** `target-size` is `enabled: false` by default in axe-core
-> 4.13.0, so a stock run reports "0 violations" without testing target size at all. Turn it on:
+> **axe won't catch this** — `target-size` is `enabled:false` by default in axe-core 4.13.0; a
+> stock run reports "0 violations" without testing it. Turn on:
 > `axe.run(el, { rules: { 'target-size': { enabled: true } } })`.
 
 A visually small control can still be a compliant target if a transparent `::before` enlarges the
@@ -312,14 +295,11 @@ Native `<button>` gets this free. A custom control must fire on `pointerup`/`cli
 
 **Level AA**
 
-**Arrow keys do not satisfy this criterion, even though a slider needs them anyway for 2.1.1.** Per
-the W3C Understanding note: "achieving keyboard equivalence for a dragging operation does not
-automatically meet this success criterion" — 2.1.1 and 2.5.7 are evaluated independently, and a
-keyboard-only fallback leaves touchscreen users (who may have no physical keyboard at all) with no
-alternative. The actual requirement is a single-pointer, no-drag way to set the value — most simply,
-a `click`/`tap` handler on the track that jumps the thumb straight to that position. A native
-`<input type="range">` gets this for free (the browser owns the interaction); a custom `role="slider"`
-built from a `<div>`/`<button>` must implement the track-click handler explicitly.
+**Requires a single-pointer, no-drag way to set the value** — a `click`/`tap` handler on the track
+that jumps the thumb straight to position. Arrow keys don't satisfy this SC (2.1.1 and 2.5.7 are
+evaluated independently, per the W3C Understanding note), since touchscreen users may have no
+keyboard. Native `<input type="range">` gets this free; a custom `role="slider"` must implement
+track-click explicitly.
 
 ---
 # 4. Visual
@@ -333,14 +313,11 @@ Those must be resolved by hand, on real pixels.
 
 **How to measure without producing a false result:**
 
-- `Page.captureScreenshot` `clip` is **document-absolute**; `getBoundingClientRect()` is
-  **viewport-relative**. Screenshot the viewport and crop in PIL with viewport-relative coordinates.
-  A ratio of exactly `1.00:1` with one unique colour means your crop missed.
-- Crop to the **glyph band** — the union of `Range.getClientRects()` over the text nodes — so the
-  element's own border is excluded. A 1px border can occupy enough of a padding-box crop to be
-  picked as "the background" and produce a false failure.
-- Take the **dominant** background, not the worst minority colour. At 12px the glyph core is under
-  1% of the crop, so the most *frequent* off-background pixel is an anti-aliasing mid-tone.
+- `clip` is **document-absolute**, `getBoundingClientRect()` is **viewport-relative** — mixing
+  them gives exactly `1.00:1`, meaning the crop missed.
+- Crop to the **glyph band** (`Range.getClientRects()` union) to exclude the element's own border.
+- Take the **dominant** background colour, not the worst minority — at 12px the glyph core is under
+  1% of the crop.
 
 ---
 
@@ -377,20 +354,16 @@ p { margin-bottom:2em !important; }
 
 Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 
-> **Build target sizes out of `padding`, not `line-height`.** This criterion invites the user to
-> override `line-height`, so a 24px target built on line-height collapses under the very override
-> you are being tested against. Padding is unaffected.
+> **Build target sizes out of `padding`, not `line-height`** — this SC overrides `line-height`, so
+> a line-height-based 24px target collapses under the very override being tested. Padding is
+> unaffected.
 
-> **Fix the width first, not just the recovery path.** A `<select>`'s floating label (e.g. "Motor /
-> Battery Capacity", or a value like "The new ID.3 Neo") can run out of room under these overrides
-> if two selects are forced to share a row. `.select-group` stacks them vertically, unconditionally
-> (no breakpoint gating — this page's own grid makes available width non-monotonic across
-> viewports, so no single breakpoint threshold holds), which gives each label the full row width
-> everywhere and eliminates the truncation outright — verified zero clipping at every tested width.
+> **Fix the width first, not just the recovery path.** `.select-group` stacks selects vertically,
+> unconditionally, giving each floating label the full row width everywhere — zero clipping
+> verified at every width.
 >
-> As a secondary, belt-and-suspenders safeguard (for if content ever grows past the stacked width),
-> wrap that select's `<option>`s in an `<optgroup label="…">` carrying the identical text, so opening
-> the select (its own normal operation) reveals it in full:
+> Secondary safeguard: wrap `<option>`s in a matching `<optgroup label="…">` so opening the select
+> reveals the text in full:
 > ```html
 > <select aria-labelledby="battery-fl-label">
 >   <optgroup label="Motor / Battery Capacity">
@@ -398,10 +371,9 @@ Nothing may newly clip, no control may be lost, no horizontal scroll may appear.
 >   </optgroup>
 > </select>
 > ```
-> Do this in **every** place that rebuilds the select's `innerHTML` (a trim-change handler, etc.) —
-> a static markup fix alone will be silently undone the moment the options are rebuilt in JS. Treat
-> the optgroup as a safety net, not the primary fix: a label with no matching optgroup, and no
-> layout fix either, has no escape — it must actually fit, or the criterion is a real failure.
+> Apply in **every** place that rebuilds the select's `innerHTML` — a static fix alone is undone
+> on rebuild. The optgroup is a safety net, not the primary fix: a label with neither has no
+> escape.
 
 ---
 
@@ -464,42 +436,33 @@ No `@media (orientation:)` rule that hides or restricts content.
 }
 ```
 
-Ray-casting `elementFromPoint` in 0.5px steps confirms a 24.0 × 24.0 hit region, and all four
-corners at ±11 return the button. **This is load-bearing.** If someone removes the `::before` as
-dead CSS, the spacing exception will *not* rescue it: the enclosing `div.step-track-wrap` has its
-own click handler, so it is itself a target, and the thumb sits inside it — centre-to-box distance
-0, against 12px required.
+Ray-casting `elementFromPoint` in 0.5px steps confirms 24.0×24.0, all four ±11 corners return the
+button. **Load-bearing:** removing `::before` as dead CSS isn't rescued by the spacing exception —
+the enclosing `div.step-track-wrap` has its own click handler, so centre-to-box distance is 0 (12px
+required).
 
-> **axe reaches the right verdict by the wrong route.** It measures the thumbs as 18×18, fails them
-> on size, then passes them on *offset* — and its neighbour set silently excludes `div[click]` and
-> `label`, so it never considered the wrapper. Do not rely on `target-size` for this pattern; prove
-> the hit area yourself.
+> **axe reaches the right verdict by the wrong route** — measures 18×18, fails on size, passes on
+> *offset* (its neighbour set excludes `div[click]`/`label`, missing the wrapper). Don't rely on
+> `target-size` here; prove the hit area yourself.
 
 **`button.reset-link` is 20px tall and passes on the spacing exception**, with 30px clearance
 centre-to-box against a 12px requirement. That one *is* exception-dependent — give it 24px if the
 layout ever tightens.
 
-**The ten edit icons were re-architected from `<label for>` to real `<button>`s this session — the
-old "six identically-named Edit graphics" decision no longer applies.** Each button now carries its
-own unique, descriptive `aria-label` (e.g. "Edit home charging price"); the icon inside stays
-`alt=""` so it is never announced a second time. That resolves the linear-reading ambiguity outright
-— there's no longer a generic "Edit" name for a screen-reader user to disambiguate. The trade-off:
-`<button>` is a real Tab stop, `<label for>` was not, so this raised the app's Tab-stop count from
-22 to 29. Nothing in 4.1.2, 2.1.1 or 2.4.3 requires reverting it, but each of these buttons now
-does nothing for a keyboard user beyond refocusing a field they can already reach directly — worth
-a deliberate product call (keep them focusable for a reason, or set `tabindex="-1"` to keep them
-pointer/touch-only) rather than a silent side effect of the naming fix.
+**The 10 edit icons were re-architected from `<label for>` to real `<button>`s** — each now has a
+unique `aria-label` (e.g. "Edit home charging price"), icon `alt=""`, resolving the old
+six-identical-"Edit" ambiguity. Trade-off: raised Tab-stop count 22→29, since each button only
+refocuses an already-reachable field. Nothing requires reverting — worth a deliberate call (keep,
+or `tabindex="-1"` for pointer/touch-only).
 
-**Error handling is already correct — keep it.** An out-of-range price sets `aria-invalid="true"`,
-links a `.field-error` message with `aria-describedby`, and names the permitted range in text. That
-is SC 3.3.1 and 3.3.3 satisfied properly, and it is the only app in the suite that needs them.
+**Error handling is already correct — keep it.** Out-of-range price sets `aria-invalid="true"`,
+links `.field-error` via `aria-describedby`, names the permitted range — SC 3.3.1/3.3.3, the only
+app in the suite that needs them.
 
-**The focus indicator on the six number inputs was the weakest thing on the page.** They signalled
-focus only by shifting their border from `#6E747E` to `#997F67` — a change of **1.25:1** between
-states, while every other control used a 2px navy outline. They now use the same outline. When
-porting, apply the focus style at the *design-system* level, not per control, or this recurs.
+**Fixed the weakest focus indicator on the page:** the number inputs signalled focus only via a
+**1.25:1** border-colour shift (`#6E747E`→`#997F67`); now use the same 2px outline as every other
+control. Apply at the *design-system* level when porting, or this recurs.
 
-**Contrast: 56 nodes go `incomplete` and every one passes.** The cause is a `linear-gradient` on
-`.input-section` plus `span.slot-reel`, the animated digit roller, which lays out 33×560 and
-geometrically overlaps neighbouring text while being visually clipped. Worst measured ratio 6.19:1.
-Expect the same `incomplete` noise in the port; it is not a defect.
+**Contrast: 56 nodes go `incomplete`, every one passes — worst ratio 6.19:1.** Cause:
+`linear-gradient` on `.input-section` plus `span.slot-reel` digit-roller overlap. Expect the same
+noise in the port; not a defect.

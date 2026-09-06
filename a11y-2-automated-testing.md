@@ -29,7 +29,7 @@ The local `index.html` and the deployed build are **byte-identical**.
 
 | Tool | Good for | Blind spots that matter here |
 |---|---|---|
-| **axe-core 4.13.0** | Structural ARIA, names, roles, contrast on solid backgrounds | **No `label-in-name` rule at all** (SC 2.5.3). **Cannot see an unnamed inline `<svg>` that has no `role`** — trap 10. Cannot see behaviour. Punts on contrast over gradients. **Nine rules are off by default, including `target-size`** — trap 1 |
+| **axe-core 4.13.0** | Structural ARIA, names, roles, contrast on solid backgrounds | **No `label-in-name` rule** (2.5.3); blind to unnamed `<svg>` (trap 10) and behaviour; punts on gradient contrast; **9 rules off by default incl. `target-size`** (trap 1) |
 | **WAVE 3.3.1.0** | A genuinely different engine; catches empty labels and sr-only contrast axe passes | Needs a public URL. Reports `.sr-only` contrast as an error even when clipped to 1×1 |
 | **Nu HTML validator** | SC 4.1.1 Parsing, still normative under EN 301 549 | Says nothing about semantics or naming |
 | **Accessibility tree (CDP)** | Ground truth for name / role / value | Exposure is not announcement — §5 |
@@ -39,7 +39,7 @@ The local `index.html` and the deployed build are **byte-identical**.
 
 | Required | Status | Note |
 |---|---|---|
-| **axe DevTools 4.12.1** | ✅ **Done — UI at WCAG 2.2 AA** | Automated scan (default + info-modal-open states), Interactive Elements, and Forms guided tests all run — every AI-flagged item was a false positive (a decorative header icon with a correct empty `alt`, a disabled `battery-select` flagged as a keyboard-access failure when disabled-on-purpose is the point, a value-readout `<span>` misjudged as needing its own tab stop, and one internally-inconsistent finding where the tool's own highlight and reasoning referred to different elements) — §9.3 |
+| **axe DevTools 4.12.1** | ✅ **Done — UI at WCAG 2.2 AA** | All 3 guided tests run, every flag a false positive (decorative icon, disabled-on-purpose select, value-readout span, one internally-inconsistent finding) — §9.3 |
 | **WAVE Evaluation Tool 3.3.1.0** | ✅ **Done — hosted and extension, both states** | Hosted engine via `wave.webaim.org/report#/<url>`; extension pass confirmed **0 errors, 0 contrast errors** in both the default state and the info-modal-open state — §9.2 |
 | **Zoom 400% and 320 × 256 px** | ✅ **Done** | `320×256 @ deviceScaleFactor 4`. **dsf 1 is a small screen, not a zoomed one** |
 | **Operated via the keyboard** | ✅ **Done** | Driven with real `Input.dispatchKeyEvent` |
@@ -48,11 +48,10 @@ The local `index.html` and the deployed build are **byte-identical**.
 
 ### NVDA vs VoiceOver — a deviation to record
 
-VoiceOver is planned instead of NVDA. Record that as a **deviation**, not a substitution. The two
-disagree exactly where this app is interesting: a `<select>` named via `aria-labelledby`, live-region
-politeness, and controls built from a visually hidden `<input>` behind a styled `<label>`. NVDA is
-normally tested with Firefox or Chrome, VoiceOver with Safari, so the browser differs too. Budget an
-NVDA pass before formal sign-off.
+**Deviation, not a substitution.** The two disagree where this app is interesting: `<select>`
+naming via `aria-labelledby`, live-region politeness, hidden-`<input>`-behind-`<label>` controls.
+Different browser too (NVDA: Firefox/Chrome; VoiceOver: Safari). Budget an NVDA pass before
+sign-off.
 
 ---
 
@@ -101,13 +100,11 @@ checked and kept.
 axe punts whenever the background is a gradient, an image, or overlapped. Those are **not passes** —
 a BITV tester must resolve every one. At 1440×900 there were **36**.
 
-33 are "bgGradient" from the `linear-gradient` on `.input-section`; the rest are "bgOverlap" caused by `span.slot-reel`, the animated digit roller, which is laid out 33x560 and geometrically overlaps neighbouring text.
+33 are "bgGradient" from the `linear-gradient` on `.input-section`; the rest are "bgOverlap" from `span.slot-reel` (the animated digit roller), laid out 33x560 and geometrically overlapping neighbouring text.
 
-**Every one resolves to a pass.** Measured on composited pixels: viewport screenshot, cropped in PIL
-with viewport-relative coordinates, foreground taken from the glyph band and background from the
-dominant colour of a second capture with the text forced transparent. **Worst ratio anywhere:
-6.19:1**, against a 4.5:1 requirement (every element is 16px or smaller, so the 3:1
-large-text threshold never applies).
+**Every one resolves to a pass — worst ratio 6.19:1** vs 4.5:1 required (no element ≥16px, so no
+large-text 3:1 threshold applies). Measured on composited pixels: PIL crop, viewport-relative
+coords, dominant background colour vs glyph-band foreground.
 
 ## Orientation and text spacing
 
@@ -117,16 +114,12 @@ large-text threshold never applies).
 `letter-spacing:0.12em`, `word-spacing:0.16em`, `p margin-bottom:2em`) at 1440 / 390 / 320:
 **no newly clipped element, no control lost, no horizontal scroll.**
 
-> **One nuance the detector accounts for.** The trim-select and battery-select floating labels
-> ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") do still visually truncate at some
-> widths under these overrides. That is not counted as loss: each select's `<option>`s are wrapped
-> in an `<optgroup>` whose `label` matches the truncated string exactly, so opening the select —
-> its own normal operation — reveals the same text in full. A label whose content has no such
-> match inside its own control (there is none here) would still fail this check.
+> **Nuance:** the select floating labels do still truncate under these overrides — not counted as
+> loss, since each `<option>` is wrapped in a matching `<optgroup label>`, so opening the select
+> reveals the text in full. A label with no matching optgroup would still fail.
 
-> **Detector validated.** A canary that fits at the default line-height and overflows only at 1.5
-> was injected and *was* detected. A first canary was already clipped before the override and
-> therefore proved nothing — "no new clipping" is worthless unless you have watched the detector fire.
+> **Detector validated:** a canary fitting at default line-height and overflowing only at 1.5 was
+> injected and detected. (A canary already clipped pre-override proves nothing.)
 
 ---
 
@@ -144,21 +137,19 @@ Every axe detector was re-run against the page with that defect injected:
 | `<a href>` with no text | `link-name` | ✅ |
 | Two adjacent 12×12 buttons | `target-size` | ✅ |
 
-**`target-size` first appeared to miss, and that was the harness's fault.** The canaries had been
-injected at `position:fixed; top:0; left:0` — underneath the sticky topbar, so axe treated them as
-obscured — and only `violations` was read. In normal flow the rule fires on both nodes. Traps 1 and 2.
+**`target-size` first appeared to miss — harness fault, not axe's.** Canaries were injected under
+the sticky topbar (`position:fixed;top:0;left:0`), so axe marked them obscured and only
+`violations` was read. Traps 1 and 2.
 
 ---
 
 # 4. Ten traps that produce a confident false pass
 
-**1 · Bare `axe.run()` is not every rule.** Nine rules are `enabled:false` by default in axe-core
-4.13.0: **`target-size`** (SC 2.5.8), `aria-roledescription`, `color-contrast-enhanced`,
-`duplicate-id`, `duplicate-id-active`, `identical-links-same-purpose`,
-`landmark-complementary-is-top-level`, `meta-refresh-no-exceptions`, `audio-caption`. A stock run
-reports "0 violations" **without ever having tested target size**. Pass
-`{rules:{'target-size':{enabled:true}, …}}` and confirm the rule appears in `passes`. Check
-`axe._audit.rules.filter(r => !r.enabled)` before believing a rule ran.
+**1 · Bare `axe.run()` is not every rule.** 9 rules are `enabled:false` by default in axe-core
+4.13.0: `target-size` (2.5.8), `aria-roledescription`, `color-contrast-enhanced`, `duplicate-id`,
+`duplicate-id-active`, `identical-links-same-purpose`, `landmark-complementary-is-top-level`,
+`meta-refresh-no-exceptions`, `audio-caption`. Force-enable and confirm in `passes`; check
+`axe._audit.rules.filter(r => !r.enabled)` first.
 
 **2 · `violations` is not the whole result.** `incomplete` is the "needs review" bucket a BITV or
 EN 301 549 tester must resolve by hand. It is also where an *obscured* element lands — so a
@@ -176,35 +167,31 @@ and not the one 1.4.4 asks for.
 `iconlist.error` is `{description, count, items}`, not a map — summing it as a map yields a false
 all-zero clean pass.
 
-**6 · `Page.captureScreenshot` clip is document-absolute.** `getBoundingClientRect()` is
-viewport-relative. Mixing them photographs a blank region: the element scores exactly `1.00:1` with
-one unique colour. **A ratio of exactly 1.00 means the clip missed, not that contrast failed.**
+**6 · `Page.captureScreenshot` clip is document-absolute; `getBoundingClientRect()` is
+viewport-relative.** Mixing them photographs a blank region — scores exactly `1.00:1`, one colour.
+That means the clip missed, not that contrast failed.
 
-**7 · Anti-aliasing is not the background, and neither is a border.** Taking the *worst* minority
-colour in a text crop reports white-on-dark text as a failure — it has found the element's own
-border. Crop to the **glyph band** (union of `Range.getClientRects()`), or the padding box for a
-`<select>`, and use the **dominant** background.
+**7 · Anti-aliasing/borders aren't the background.** Taking the *worst* minority colour in a text
+crop flags white-on-dark as a failure — it found the border. Crop to the **glyph band**
+(`Range.getClientRects()` union) and use the **dominant** colour.
 
 **8 · A `<select>`'s options are not its label.** Comparing concatenated `<option>` text against the
 accessible name manufactures SC 2.5.3 failures that do not exist. Compare the associated `<label>`.
 
-**9 · `Network.setCacheDisabled` is a no-op unless `Network.enable` was called first.** Re-auditing
-after an edit then silently re-measures the *old* page and reports the defect as unfixed. Enable the
-domain, or append a cache-busting query string.
+**9 · `Network.setCacheDisabled` is a no-op unless `Network.enable` runs first** — re-auditing
+silently re-measures the old page. Enable the domain, or cache-bust the URL.
 
-**10 · axe is blind to unnamed inline SVGs.** `svg-img-alt` and `role-img-alt` return
-**`inapplicable`** for an `<svg>` with no `role`, and `image-alt` only inspects `<img>`. A page can
-expose any number of unnamed graphics and still score 0 violations. **Read `role=image` nodes off
-the AX tree and assert 0 unnamed** — that is how every unnamed-graphic failure in this suite was
-found, and neither axe nor WAVE nor Nu saw any of them.
+**10 · axe is blind to unnamed inline SVGs.** `svg-img-alt`/`role-img-alt` return `inapplicable`
+for `<svg>` with no `role`; `image-alt` only checks `<img>`. **Read `role=image` off the AX tree and
+assert 0 unnamed** — how every unnamed-graphic failure here was found; axe/WAVE/Nu saw none.
 
 ---
 
 # 5. What automation will never close
 
-**Real screen-reader/AI-guided output requires a human pass.** The accessibility tree confirms what
-is *exposed*; NVDA, JAWS and VoiceOver differ in what they *announce*. VoiceOver, WAVE, and axe
-DevTools have now all been run manually — §9. **NVDA remains the one outstanding instrument.**
+**NVDA remains the one outstanding instrument** — VoiceOver, WAVE, axe DevTools all run manually
+(§9). AX tree confirms what's *exposed*; NVDA/JAWS/VoiceOver differ in what they *announce*, which
+needs a human pass.
 
 **A name can be present, unique, and wrong.** Every automated check here passes on a control
 labelled "button". Names must be read against what they describe.
@@ -215,13 +202,9 @@ labelled "button". Names must be read against what they describe.
 
 # 6. Manual testing — what to do
 
-**All three manual runs (VoiceOver, WAVE, axe DevTools) have now been run — results in §9. NVDA
-remains outstanding** — §1.
-
-**The reusable procedure (Step 0, VoiceOver/WAVE/axe DevTools runs, sign-off checklist) lives
-centrally** in `../audit-evidence/manual-testing-guide.md` — it's identical across all five sibling
-apps, so it's maintained once there instead of copied per app. What follows here is only what's
-specific to cost-simulator.
+**All 3 manual runs done — results in §9; NVDA outstanding** (§1). The reusable procedure lives
+centrally in `../audit-evidence/manual-testing-guide.md` (identical across all 5 sibling apps).
+Below: only what's specific to cost-simulator.
 
 ## App-specific Step 0
 
@@ -263,15 +246,11 @@ is exactly what scores clean on a build with a Level A naming failure.
 
 ## 9.1 Screen reader — VoiceOver / Safari, complete
 
-VoiceOver Run 1 completed against the live build: full Tab-order walk (29 stops, skip link through
-the CTA button — the four location rows' step-thumb/price-input/edit-icon sequence, the miles
-slider, trim-select with battery-select correctly disabled/skipped on the default Trend trim), all
-5 info-modals (open/read/close via all three methods, focus returns to the trigger correctly), and
-the rotor sweep (Form Controls, Headings — 1 real `<h1>` matches the code, Landmarks). All clear, no
-findings. One real parity gap found and fixed along the way (not a VoiceOver defect per se, but
-surfaced during this pass): the distance-distribution thumbs (`dist-thumb-1`/`dist-thumb-2`) only
-announced their own single segment (e.g. "33% city"), unlike range-simulator's identical component,
-which announces both neighbouring segments. Corrected to match — see `a11y-3-implementation.md`.
+Full Tab-order walk (29 stops), all 5 info-modals (open/read/close, focus returns to trigger),
+rotor sweep (Form Controls, Headings — 1 `<h1>`, Landmarks) — all clear, no findings. One real gap
+found and fixed: `dist-thumb-1`/`dist-thumb-2` only announced their own segment (e.g. "33% city")
+instead of both neighbours, unlike range-simulator's identical component — corrected, see
+`a11y-3-implementation.md`.
 
 ## 9.2 WAVE 3.3.1.0 — extension, complete
 
@@ -281,26 +260,17 @@ state and the info-modal-open state.
 ## 9.3 axe DevTools 4.12.1 — automated scan + Interactive Elements + Forms, complete
 
 All run against the live build. Findings, all false positives:
-- **Automated scan (default state):** 1× "Informative images must have accessible names" on
-  `.sim-header-icon` (`alt=""`) — a small decorative glyph beside the already-fully-descriptive
-  page headline. `alt=""` is the correct marking for a decorative image, not a bug.
-- **Automated scan (info-modal-open state):** 0 issues.
-- **Interactive Elements guided test:** 3 items examined — `battery-select` (disabled on the
-  default Trend trim, correctly excluded from keyboard access), a `<span class="label-freq">`
-  value-readout for a step-slider (not a separate control, just a text mirror of the real
-  slider's already-focusable value), and one finding where the tool's highlighted element
-  (`battery-select`) didn't match its own written reasoning (which described a completely
-  different "mileage" control) — an internal tool inconsistency, not evaluable as a real or
-  false finding either way.
+- **Automated scan (default):** 1× false flag on `.sim-header-icon` (`alt=""`, correctly decorative).
+- **Automated scan (info-modal-open):** 0 issues.
+- **Interactive Elements:** 3 items, all false/inconclusive — `battery-select` (disabled-on-purpose),
+  a `<span class="label-freq">` value-readout (text mirror, not a separate control), and one
+  internally-inconsistent finding (highlight ≠ its own reasoning).
 - **Forms guided test:** clear.
 
-**A real, non-axe-flagged gap was found and fixed during this pass** (via a real-production DOM
-comparison, not any automated tool): the distance-distribution thumbs (`dist-thumb-1`/
-`dist-thumb-2`) exposed a static `aria-valuemin="0" aria-valuemax="100"` regardless of the other
-thumb's position, when the actual operable range is bounded by it (neither thumb can cross the
-other). The real core component dynamically narrows this. Fixed to match, and the `aria-label`s
-were also aligned to range-simulator's naming ("City / Country road split" / "Country road /
-Motorway split") — see `a11y-3-implementation.md`.
+**Real gap found via DOM comparison against production, not any tool:** `dist-thumb-1`/
+`dist-thumb-2` exposed static `aria-valuemin="0" aria-valuemax="100"` though neither can cross the
+other. Fixed to narrow dynamically; `aria-label`s aligned to range-simulator's naming — see
+`a11y-3-implementation.md`.
 
 ## 9.4 Outstanding
 

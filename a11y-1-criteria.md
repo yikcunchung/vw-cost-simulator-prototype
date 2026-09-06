@@ -1,13 +1,12 @@
 # A11y 1 of 3 — WCAG 2.2 criterion checklist
 
 **App:** VW Cost Simulator (`cost-simulator`) — a single-page simulator.
-**Audited:** 2026-08-22, re-verified 2026-08-31 — the orange focus ring, the button-based edit
-icons, the ID. Polo model group and the resulting 29-control tab order below are all pushed to
-`origin/main` and live on the deployment; the working tree carries no uncommitted changes.
+**Audited:** 2026-08-22, re-verified 2026-08-31 — the orange focus ring, button-based edit icons,
+ID. Polo model group, and the resulting 29-control tab order are all pushed to `origin/main` and
+live; the working tree carries no uncommitted changes.
 **Deployed at:** https://yikcunchung.github.io/vw-cost-simulator-prototype/
-**Scope:** the whole page. This app is standalone, so there is no component-versus-page split and
-nothing is out of scope. **PDFs are excluded** — the app ships none; they would be a separate
-conformance surface under EN 301 549 clause 10, checked with PAC.
+**Scope:** the whole page. Standalone app — no component/page split, nothing out of scope.
+**PDFs excluded** — none shipped; would be a separate EN 301 549 clause 10 surface, checked with PAC.
 **Companion documents:** `a11y-2-automated-testing.md` (what the tools can and cannot prove) ·
 `a11y-3-implementation.md` (what to build).
 
@@ -15,10 +14,9 @@ The conformance target is **Level A + AA** — what EN 301 549 clause 9 requires
 BFSG / the European Accessibility Act. That is **56 criteria** (32 A + 24 AA). The 31 Level AAA
 criteria are not required and are not listed.
 
-> **If EN 301 549 becomes the formal target**, note that V3.2.1 (2021-03) references **WCAG 2.1**,
-> not 2.2. The only practical delta is **4.1.1 Parsing** — obsolete in 2.2 but normative in 2.1 and
-> listed by EN as clause 9.4.1.1. It is satisfied here and kept in the table rather than dropped, so
-> the EN path is not silently broken.
+> **If EN 301 549 becomes the formal target:** V3.2.1 (2021-03) references **WCAG 2.1**, not 2.2.
+> The only practical delta is **4.1.1 Parsing** — obsolete in 2.2, normative in 2.1 (EN clause
+> 9.4.1.1). Satisfied here and kept in the table so the EN path isn't silently broken.
 
 | Status | Meaning |
 |---|---|
@@ -38,7 +36,7 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **1.1.1** | Non-text Content | A | Yes | ✅ Pass | **0 unnamed nodes in the accessibility tree**, at all 5 viewports. 9 decorative inline `<svg>`s were exposed unnamed and now carry `aria-hidden="true"`; `#car-img` was `alt="Volkswagen"` — present but not descriptive — and is now `alt="Volkswagen ID.3 Neo"`, matching the sibling simulators. **No tool detected either** — axe, WAVE and Nu all reported clean. |
+| **1.1.1** | Non-text Content | A | Yes | ✅ Pass | **0 unnamed nodes in the AX tree**, all 5 viewports. Fix: 9 decorative `<svg>`s → `aria-hidden="true"`; `#car-img` alt `"Volkswagen"` → `"Volkswagen ID.3 Neo"`. axe/WAVE/Nu all reported clean — no tool caught either defect. |
 
 
 ## 1.2 Time-based Media
@@ -57,7 +55,7 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **1.3.1** | Info and Relationships | A | Yes | ✅ Pass | One `h1`, `role="banner"` topbar, `main`, two named `<select>`s, six labelled number inputs and eight `role="slider"` thumbs. axe 0 violations on structure rules at 98 rules. |
-| **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order across all 29 Tab stops (up from 22 — the 10 edit-icon buttons are now real focusable controls instead of `<label>`s, see 4.1.2); the desktop and mobile price rows swap by `display`, and the DOM order follows whichever is shown. |
+| **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order, all 29 Tab stops (up from 22, see 4.1.2). Desktop/mobile price rows swap by `display`; DOM order follows whichever is shown. |
 | **1.3.3** | Sensory Characteristics | A | Yes | ✅ Pass* | No instruction relies on shape, size or position. |
 | **1.3.4** | Orientation | AA | Yes | ✅ Pass | No `@media (orientation:)` rule exists anywhere. Nothing locks orientation. |
 | **1.3.5** | Identify Input Purpose | AA | No | ⚪ N/A | No field collects information *about the user* — no name, address, email or payment. The number inputs are tariff prices, not personal data, so `autocomplete` has nothing to identify. |
@@ -69,12 +67,12 @@ criteria are not required and are not listed.
 |---|---|---|---|---|---|
 | **1.4.1** | Use of Color | A | Yes | ✅ Pass* | Colour is never the only channel. |
 | **1.4.2** | Audio Control | A | No | ⚪ N/A | No audio. `audio[autoplay]` / `video[autoplay]` count is 0. |
-| **1.4.3** | Contrast (Minimum) | AA | Yes | ✅ Pass | **All 56 `color-contrast` incomplete nodes resolved by hand on composited pixels — worst 6.19:1**, against 4.5:1. 33 are the `linear-gradient` on `.input-section`; the rest are geometric overlap from `span.slot-reel`, the animated digit roller, which lays out 33×560 and overlaps neighbouring text rects while being visually clipped. |
+| **1.4.3** | Contrast (Minimum) | AA | Yes | ✅ Pass | **56 `color-contrast` incomplete nodes resolved by hand — worst 6.19:1** vs 4.5:1 required. Cause: `linear-gradient` on `.input-section` (33) and geometric overlap from `span.slot-reel` digit roller (rest). |
 | **1.4.4** | Resize Text | AA | Yes | ✅ Pass | 400% zoom (320×256 @ dsf 4): 0 violations, no horizontal scroll, all 29 controls present. |
 | **1.4.5** | Images of Text | AA | Yes | ✅ Pass* | No images of text. All text is live text. |
-| **1.4.10** | Reflow | AA | Yes | ✅ Pass | No horizontal scroll at 320 / 390 / 768 / 1440 or at 400% zoom. The four desktop price rows are swapped for `-m` mobile equivalents at narrow widths — a responsive substitution, not a loss: the control count is 29 at every viewport. |
-| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | The shared `.fl-input`/`.fl-select` resting-state border (`--border-input`) is `rgb(110,116,126)` (4.32:1), clearing 3:1 outright — no exception argument needed. This deliberately deviates from the real production core components (which use `rgb(161,164,172)`, 2.29:1, verified by pixel-sampling a live screenshot): **this prototype's purpose is to demonstrate a build that passes every criterion outright, regardless of whether the upstream core component itself does.** The focus ring is `var(--focus-orange)` `#C86C03`, measured **3.44:1** against the page background and **3.51:1** against the navy-dark step-thumb background: also clears 3:1. |
-| **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | All four overrides applied (line-height 1.5, letter-spacing .12em, word-spacing .16em, paragraph 2em) at 1440 / 390 / 320: **no newly clipped element, no control lost, no horizontal scroll.** Detector validated with a canary that fits at the default line-height and overflows at 1.5. `.select-group` stacks the trim-select and battery-select vertically, unconditionally (no breakpoint gating), so each floating label ("Model: The new ID.3 Neo" / "Motor / Battery Capacity") gets the full row width at every viewport, including 960–1024px where this app's own grid narrows the shared column below both mobile and desktop widths — verified zero truncation across all tested widths. As a secondary safeguard, each select's `<option>`s are also wrapped in an `<optgroup>` whose `label` matches the floating label text (e.g. `<optgroup label="Motor / Battery Capacity">`), so even if content ever grows past the stacked width, opening the select — its own standard operation — reveals the full text natively. |
+| **1.4.10** | Reflow | AA | Yes | ✅ Pass | No horizontal scroll at 320/390/768/1440 or 400% zoom; control count is 29 at every viewport. Desktop price rows swap for `-m` mobile equivalents — a substitution, not a loss. |
+| **1.4.11** | Non-text Contrast | AA | Yes | ✅ Pass | `.fl-input`/`.fl-select` border `--border-input` = `rgb(110,116,126)`, 4.32:1, clears 3:1. Focus ring `#C86C03` measures 3.44:1 / 3.51:1, also clears 3:1. **Deliberately deviates from the real core's failing `rgb(161,164,172)`** (2.29:1) — this prototype's job is to pass outright. |
+| **1.4.12** | Text Spacing | AA | Yes | ✅ Pass | **All 4 overrides pass at 1440/390/320** — no clipping, no control lost, no horizontal scroll (canary-validated). Fix: `.select-group` stacks trim-select/battery-select vertically unconditionally so floating labels get full row width. Safeguard: each `<option>` also wrapped in a matching `<optgroup label>`. |
 | **1.4.13** | Content on Hover or Focus | AA | No | ⚪ N/A | No hover- or focus-triggered overlay. |
 
 
@@ -85,7 +83,7 @@ criteria are not required and are not listed.
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 29 controls keyboard-operable, including the eight `role="slider"` step thumbs and `button.reset-link`. **This was a Level A failure until 2026-08-24** and no scanner saw it: `buildStepSlider()` runs twice per location and `resetChargeInputs()` calls it again, so each thumb accumulated `keydown` listeners. One ArrowRight moved **two** steps, and after one Reset it jumped straight to the maximum — a keyboard user could never reach `occasionally` or `often`, while a mouse user could click either. Fixed by binding once per element (`dataset.keysBound`); guarding on `suffix === ''` is **not** sufficient because it still re-binds on Reset. Five regression tests now hold it. |
+| **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 29 controls keyboard-operable. **Was a Level A failure until 2026-08-24**, invisible to any scanner: `buildStepSlider()`/`resetChargeInputs()` double-bound `keydown` on each thumb, so ArrowRight moved two steps and Reset jumped to max. Fixed via `dataset.keysBound` guard; 5 regression tests hold it. |
 | **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 29 stops and returns to the first. |
 | **2.1.4** | Character Key Shortcuts | A | No | ⚪ N/A | No single-character key shortcuts are registered. |
 
@@ -115,7 +113,7 @@ criteria are not required and are not listed.
 | **2.4.4** | Link Purpose (In Context) | A | No | ⚪ N/A | No links other than the skip link, which is named. |
 | **2.4.5** | Multiple Ways | AA | No | ⚪ N/A | A standalone single page. SC 2.4.5 applies to a *set* of web pages; there is no set. |
 | **2.4.6** | Headings and Labels | AA | Yes | ✅ Pass | One `h1`, no skipped levels. Every control name is descriptive and location-qualified ("Home charging price in pounds per kWh"). |
-| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | Every one of the 29 stops shows a visible focus indicator. The number inputs (six visible at a time, ten total across the desktop/mobile breakpoint variants) previously indicated focus only by shifting their border from `#6E747E` to `#997F67` — a change of just **1.25:1** between states, and the only controls in the app not using the shared outline. They now use `outline:2px solid var(--focus-orange)` (`#C86C03`), the same ring as every other control (see 1.4.11 for measured contrast: 3.44:1 on the page background, 3.51:1 on navy-dark). The ring colour itself changed from navy to orange to match the range-simulator convention; verified rendering identically on the live deployment. |
+| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | All 29 stops show a visible indicator. Fix: the 10 number inputs previously signalled focus only via a 1.25:1 border-colour shift; now use `outline:2px solid var(--focus-orange)` (`#C86C03`), same ring as every other control (see 1.4.11). |
 | **2.4.11** | Focus Not Obscured (Minimum) | AA | Yes | ✅ Pass | No fixed or sticky element overlaps a focused control; all measured inside the viewport after settling. |
 
 
@@ -127,8 +125,8 @@ criteria are not required and are not listed.
 | **2.5.2** | Pointer Cancellation | A | Yes | ✅ Pass* | Activation is on the up-event; the step thumbs bind `mousedown` only to begin a drag, and a drag can be abandoned. |
 | **2.5.3** | Label in Name | A | Yes | ✅ Pass | All labelled controls exact — every visible `<label>` text is contained in its control's accessible name. |
 | **2.5.4** | Motion Actuation | A | No | ⚪ N/A | No device-motion or user-motion actuation. |
-| **2.5.7** | Dragging Movements | AA | Yes | ✅ Pass | **Not** because of arrow keys — per the Understanding note, "achieving keyboard equivalence for a dragging operation does not automatically meet this success criterion"; 2.1.1 and 2.5.7 are evaluated independently, and a keyboard alternative alone would not satisfy this criterion. The actual single-pointer, no-drag alternative is a `click` handler on the track itself: `.dist-block` and every `.step-track-wrap` jump their thumb straight to the clicked position without requiring a drag. `#miles-slider` is a native `<input type="range">`, whose own click/drag handling is the user agent's responsibility and is exempt from this criterion outright. |
-| **2.5.8** | Target Size (Minimum) | AA | Yes | ✅ Pass | **No target under 24×24.** The eight `.step-thumb-el` render as 18×18 but their real pointer target is **exactly 24.0 × 24.0** via a transparent `::before` — confirmed by ray-casting `elementFromPoint` in 0.5px steps, hitting the button at all four ±11 corners. `button.reset-link` is 20px tall and passes on the **spacing exception**, with 30px clearance centre-to-box against its nearest neighbour (12px required). |
+| **2.5.7** | Dragging Movements | AA | Yes | ✅ Pass | Satisfied via a `click` handler on the track (`.dist-block`, `.step-track-wrap`), not arrow keys — per the Understanding note, keyboard equivalence alone doesn't meet this SC. `#miles-slider` is a native `<input type="range">`, exempt outright. |
+| **2.5.8** | Target Size (Minimum) | AA | Yes | ✅ Pass | **No target under 24×24.** `.step-thumb-el` renders 18×18, real target **24.0×24.0** via transparent `::before` (ray-cast confirmed). `button.reset-link` (20px) passes on the spacing exception: 30px clearance vs 12px required. |
 
 
 # 3. Understandable
@@ -173,50 +171,38 @@ criteria are not required and are not listed.
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **4.1.1** | Parsing | A | Yes | ✅ Pass | Nu HTML validator: **0 errors**. Obsolete in WCAG 2.2 but normative under EN 301 549 clause 9.4.1.1, so it is checked and kept. |
-| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass* | **AX tree: 29 interactive controls, 0 unnamed, 0 duplicate role+name pairs**, confirmed via `Accessibility.getFullAXTree`. The eight step thumbs expose `role="slider"` with `aria-valuemin`/`max`/`now`. `#trim-select`'s name comes from `aria-labelledby="q-model trim-model-static trim-fl-label"` — the purpose-describing half ("Which model are you interested in?") is permanently stable; only the value half ("The new ID.3 Neo") mutates, same as any control whose display also shows its current value. The ten edit-icon buttons were re-architected this session from `<label for>` wrappers (not separately focusable) to real `<button>`s, each carrying its own unique, descriptive `aria-label` (e.g. "Edit home charging price") with the icon inside `alt=""`; the old open decision about six identically-named `<img alt="Edit">` graphics no longer applies — there is nothing generic left to disambiguate. Trade-off worth flagging: each button is a genuine extra Tab stop whose only function is to refocus a field the keyboard user already reached (or is about to) — not a WCAG failure, but a UX question worth a second look (see below). |
+| **4.1.2** | Name, Role, Value | A | Yes | ✅ Pass* | **AX tree: 29 controls, 0 unnamed, 0 duplicate role+name pairs.** Fix: the 10 edit-icon buttons re-architected from `<label for>` to real `<button>`s, each with a unique `aria-label` (e.g. "Edit home charging price"), icon `alt=""` — resolves the old six-identical-"Edit" ambiguity. Trade-off: each is a genuine extra Tab stop that only refocuses an already-reached field (see below). |
 | **4.1.3** | Status Messages | AA | Yes | ✅ Pass | `#cost-live` (`aria-live="polite"`, in the DOM at load, 1×1 clipped with an explicit white `color`) announces every recomputation — driven through 7 distinct announcements, e.g. "Estimated electricity cost 848 pounds per year" → 844 → 904. |
 
 ---
 
 # What is actually left to do
 
-**No open criteria and no known failures.** Every Level A/AA criterion is verified, inspected, or
-not applicable. **The one open decision under 4.1.2 (six identically-named `<img alt="Edit">`
-graphics) was resolved this session, not just recorded** — the edit affordances are now real
-`<button>`s with unique, descriptive `aria-label`s, so there is no longer any ambiguity for a
-decision to paper over — see 4.1.2 above.
+**No open criteria and no known failures.** The one open decision under 4.1.2 (six identically-named
+`<img alt="Edit">` graphics) was resolved, not just recorded — edit affordances are now real
+`<button>`s with unique `aria-label`s (see 4.1.2).
 
-**Not a WCAG failure, but worth a product decision:** those same 10 edit buttons were previously
-`<label for>` elements (not separately focusable, per the code comment on `.fl-input .fl-label`
-in `index.html`); as real `<button>`s they now each add a Tab stop whose only effect is to
-refocus the field the keyboard user just tabbed through (or is about to tab to next) — no state
-changes, nothing new to operate. This raised the app's Tab-stop count from 22 to 29. Nothing in
-2.4.3 or 2.1.1 requires removing them, but it's a real behavioural regression against the explicit
-rationale the original `<label for>` comment recorded, and is worth a deliberate call (keep the
-buttons, e.g. for a future action; or set `tabindex="-1"` on them so they stay pointer/touch-only)
-rather than shipping it silently.
+**Not a WCAG failure, but worth a product decision:** the 10 edit buttons were `<label for>` (not
+focusable); as real `<button>`s they each add a Tab stop that only refocuses an already-reachable
+field. Raised Tab-stop count 22→29. Nothing in 2.4.3/2.1.1 requires reverting — but worth a
+deliberate call (keep, or `tabindex="-1"` for pointer/touch-only).
 
-**VoiceOver, WAVE (extension, both states), and axe DevTools (automated scan + Interactive Elements
-+ Forms guided tests) have all now been run manually** — see `a11y-2-automated-testing.md` §9 for
-results. Every AI-flagged item was a false positive; no markup changes were required from any of the
-guided tests themselves. A real gap **was** found during this pass, independently of any automated
-tool, by comparing against the real production component's DOM: the distance-distribution thumbs
-statically exposed `aria-valuemin="0" aria-valuemax="100"` regardless of the other thumb's actual
-position, when the true operable range is bounded by it. Fixed to update dynamically — see
-`a11y-3-implementation.md`. **NVDA 2026.1.1.55980 is the one remaining gap**, recorded as a deviation
-(VoiceOver is not a substitute) — required before formal BITV/EN 301 549 sign-off.
+**VoiceOver, WAVE, and axe DevTools all run manually** — §9 in `a11y-2-automated-testing.md`; every
+AI-flagged item was a false positive. One real gap found independently: the distance-thumbs' static
+`aria-valuemin`/`max` didn't track the true bounded range — fixed, see `a11y-3-implementation.md`.
+**NVDA 2026.1.1.55980 remains outstanding** (VoiceOver is a deviation, not a substitute) — required
+before sign-off.
 
 # Decisions an auditor could challenge
 
-24 of the 56 A/AA criteria have **no machine-testable ACT rule**, and several apply directly here
-(1.4.11, 1.4.13, 2.5.1, 2.5.2, 2.5.8, 2.4.11). For those, "passes" reflects a **judgement**, not a
-test result.
+24 of 56 A/AA criteria have **no machine-testable ACT rule** (incl. 1.4.11, 1.4.13, 2.5.1, 2.5.2,
+2.5.8, 2.4.11) — "passes" there reflects **judgement**, not a test result.
 
 **The strongest claim this evidence supports:**
 
 > *"This app meets WCAG 2.2 A/AA on every automated and runtime check available. VoiceOver, WAVE,
 > and axe DevTools have all been run manually; NVDA is the one instrument still owed."*
 
-That is stronger than a tool-clean claim, and unlike a tool-clean claim it is true — the one real
-defect found here (the distance-thumbs' static, boundary-only range and naming, SC 4.1.2) was
-invisible to axe, WAVE and Nu alike.
+That is stronger than a tool-clean claim, and true unlike one — the one real defect found here
+(the distance-thumbs' static, boundary-only range and naming, SC 4.1.2) was invisible to axe, WAVE
+and Nu alike.
