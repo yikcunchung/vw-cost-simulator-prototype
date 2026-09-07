@@ -52,8 +52,8 @@ Polo model group, 29-control tab order: all pushed to `origin/main` and live, tr
 
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
-| **1.3.1** | Info and Relationships | A | Yes | ✅ Pass | One `h1`, `role="banner"` topbar, `main`, two named `<select>`s, six labelled number inputs and eight `role="slider"` thumbs. axe 0 violations on structure rules at 98 rules. |
-| **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order, all 29 Tab stops (up from 22, see 4.1.2). Desktop/mobile price rows swap by `display`; DOM order follows whichever shows. |
+| **1.3.1** | Info and Relationships | A | Yes | ✅ Pass | One `h1`, `role="banner"` topbar, `main`, two named `<select>`s, six labelled number inputs, eight `role="slider"` thumbs, and 4 FAQ items each `role="group"`. axe 0 violations on structure rules at 98 rules. |
+| **1.3.2** | Meaningful Sequence | A | Yes | ✅ Pass* | DOM order matches visual order, all 35 Tab stops (up from 29, see 4.1.2). Desktop/mobile price rows swap by `display`; DOM order follows whichever shows. |
 | **1.3.3** | Sensory Characteristics | A | Yes | ✅ Pass* | No instruction relies on shape, size or position. |
 | **1.3.4** | Orientation | AA | Yes | ✅ Pass | No `@media (orientation:)` rule exists anywhere. Nothing locks orientation. |
 | **1.3.5** | Identify Input Purpose | AA | No | ⚪ N/A | No field collects information *about the user* — no name, address, email, payment. Inputs are tariff prices, not personal data; `autocomplete` has nothing to identify. |
@@ -82,7 +82,7 @@ Polo model group, 29-control tab order: all pushed to `origin/main` and live, tr
 | SC | Name | Lvl | Relevant | Status | Evidence / what to do |
 |---|---|---|---|---|---|
 | **2.1.1** | Keyboard | A | Yes | ✅ Pass | All 29 controls operable. **Was a Level A failure until 2026-08-24**, invisible to any scanner: `buildStepSlider()`/`resetChargeInputs()` double-bound `keydown`, so ArrowRight moved two steps and Reset jumped to max. Fixed via `dataset.keysBound` guard (5 regression tests). |
-| **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 29 stops and returns to the first. |
+| **2.1.2** | No Keyboard Trap | A | Yes | ✅ Pass | No trap — Tab cycles all 35 stops and returns to the first. |
 | **2.1.4** | Character Key Shortcuts | A | No | ⚪ N/A | No single-character key shortcuts are registered. |
 
 
@@ -107,11 +107,11 @@ Polo model group, 29-control tab order: all pushed to `origin/main` and live, tr
 |---|---|---|---|---|---|
 | **2.4.1** | Bypass Blocks | A | Yes | ✅ Pass | `a.skip-link → #main`, the first Tab stop. |
 | **2.4.2** | Page Titled | A | Yes | ✅ Pass | `<title>Volkswagen Cost Simulator</title>` — descriptive and unique. |
-| **2.4.3** | Focus Order | A | Yes | ✅ Pass | 29 Tab stops in DOM order matching visual order, verified at 1440×900 and 390×844 with real Tab presses. |
+| **2.4.3** | Focus Order | A | Yes | ✅ Pass | 35 Tab stops in DOM order matching visual order, verified at 1440×900 and 390×844 with real Tab presses. |
 | **2.4.4** | Link Purpose (In Context) | A | No | ⚪ N/A | No links other than the skip link, which is named. |
 | **2.4.5** | Multiple Ways | AA | No | ⚪ N/A | A standalone single page. SC 2.4.5 applies to a *set* of web pages; there is no set. |
 | **2.4.6** | Headings and Labels | AA | Yes | ✅ Pass | One `h1`, no skipped levels. Every control name is descriptive and location-qualified ("Home charging price in pounds per kWh"). |
-| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | All 29 stops show a visible indicator. Fix: 10 number inputs previously signalled focus only via a 1.25:1 border shift; now `outline:2px solid var(--focus-orange)` (`#C86C03`), same ring as every other control (see 1.4.11). |
+| **2.4.7** | Focus Visible | AA | Yes | ✅ Pass | All 35 stops show a visible indicator. Fix: 10 number inputs previously signalled focus only via a 1.25:1 border shift; now `outline:2px solid var(--focus-orange)` (`#C86C03`), same ring as every other control (see 1.4.11). |
 | **2.4.11** | Focus Not Obscured (Minimum) | AA | Yes | ✅ Pass | No fixed or sticky element overlaps a focused control; all measured inside the viewport after settling. |
 
 

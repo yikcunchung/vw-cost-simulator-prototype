@@ -203,7 +203,7 @@ what's specific to cost-simulator.
 - **Confirm on screen:** 5 info-modal triggers (`info-btn-location`, `info-btn-distance`,
   `info-btn-miles`, `info-btn-fuel`, `info-btn-cost`), distance-distribution block (home/work/
   public step sliders), miles slider, price inputs with edit-icon buttons, trim/battery selects.
-- **29 Tab stops** (raised from 22 after edit-icons became real focusable buttons — re-verify live).
+- **35 Tab stops** (raised from 29 after tech-link-btn, ref-badge, and 4 FAQ questions became real focusable controls).
 
 ## App-specific notes for the central procedure's Run 2 (WAVE)
 
@@ -234,7 +234,7 @@ exactly what scores clean on a build with a Level A naming failure.
 
 ## 9.1 Screen reader — VoiceOver / Safari, complete
 
-Full Tab-order walk (29 stops), all 5 info-modals (open/read/close, focus returns to trigger),
+Full Tab-order walk (35 stops), all 5 info-modals (open/read/close, focus returns to trigger),
 rotor sweep (Form Controls, Headings — 1 `<h1>`, Landmarks) — all clear. One real gap found and
 fixed: `dist-thumb-1`/`dist-thumb-2` only announced their own segment (e.g. "33% city") not both
 neighbours, unlike range-simulator's identical component — see `a11y-3-implementation.md`.
